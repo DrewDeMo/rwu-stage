@@ -1,0 +1,327 @@
+/* DID Field as Meta Box */
+.tcl-builder-did-field {
+    background: var(--tcl-white);
+    padding: 16px;
+    margin: 16px 0;
+    border-radius: 4px;
+    border: 1px solid var(--tcl-gray-200);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Align with WordPress meta box styling */
+.postbox .tcl-builder-did-field {
+    padding: 12px;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+}
+
+/* Block editor specific styling */
+.block-editor-editor-skeleton__content .tcl-builder-did-field {
+    margin: 16px 0;
+    padding: 16px;
+    background: #fff;
+    border-radius: 2px;
+    border: 1px solid #ddd;
+}
+
+/* DID Field as Meta Box */
+.tcl-builder-did-field {
+    background: var(--tcl-white);
+    padding: 16px;
+    margin: 16px 0;
+    border-radius: 4px;
+    border: 1px solid var(--tcl-gray-200);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Align with WordPress meta box styling */
+.postbox .tcl-builder-did-field {
+    padding: 12px;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+}
+
+/* Block editor specific styling */
+.block-editor-editor-skeleton__content .tcl-builder-did-field {
+    margin: 16px 0;
+    padding: 16px;
+    background: #fff;
+    border-radius: 2px;
+    border: 1px solid #ddd;
+}
+
+/* DID Field as Meta Box */
+.tcl-builder-did-field {
+    background: var(--tcl-white);
+    padding: 16px;
+    margin: 16px 0;
+    border-radius: 4px;
+    border: 1px solid var(--tcl-gray-200);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Align with WordPress meta box styling */
+.postbox .tcl-builder-did-field {
+    padding: 12px;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+}
+
+/* Block editor specific styling */
+.block-editor-editor-skeleton__content .tcl-builder-did-field {
+    margin: 16px 0;
+    padding: 16px;
+    background: #fff;
+    border-radius: 2px;
+    border: 1px solid #ddd;
+}
+
+/* DID Field as Meta Box */
+.tcl-builder-did-field {
+    background: var(--tcl-white);
+    padding: 16px;
+    margin: 16px 0;
+    border-radius: 4px;
+    border: 1px solid var(--tcl-gray-200);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Align with WordPress meta box styling */
+.postbox .tcl-builder-did-field {
+    padding: 12px;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+}
+
+/* Block editor specific styling */
+.block-editor-editor-skeleton__content .tcl-builder-did-field {
+    margin: 16px 0;
+    padding: 16px;
+    background: #fff;
+    border-radius: 2px;
+    border: 1px solid #ddd;
+}
+
+/* DID Field as Meta Box */
+.tcl-builder-did-field {
+    background: var(--tcl-white);
+    padding: 16px;
+    margin: 16px 0;
+    border-radius: 4px;
+    border: 1px solid var(--tcl-gray-200);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Align with WordPress meta box styling */
+.postbox .tcl-builder-did-field {
+    padding: 12px;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+}
+
+/* Block editor specific styling */
+.block-editor-editor-skeleton__content .tcl-builder-did-field {
+    margin: 16px 0;
+    padding: 16px;
+    background: #fff;
+    border-radius: 2px;
+    border: 1px solid #ddd;
+}
+
+/* Campaign DID Field Styles */
+/* DID Field as Meta Box */
+.tcl-builder-did-field {
+    background: var(--tcl-white);
+    padding: 16px;
+    margin: 16px 0;
+    border-radius: 4px;
+    border: 1px solid var(--tcl-gray-200);
+}
+
+/* Align with WordPress meta box styling */
+.postbox .tcl-builder-did-field {
+    padding: 12px;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+}
+
+/* Block editor specific styling */
+.block-editor-editor-skeleton__content .tcl-builder-did-field {
+    margin: 16px 0;
+    padding: 16px;
+    background: #fff;
+    border-radius: 2px;
+    border: 1px solid #ddd;
+}
+
+/* Campaign DID Field Styles */
+.tcl-builder-did-field {
+    position: fixed;
+    top: 46px;
+    right: 20px;
+    background: var(--tcl-white);
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: var(--tcl-shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 99999;
+    border: 1px solid var(--tcl-gray-200);
+}
+
+.tcl-builder-did-field .did-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--tcl-gray-700);
+    font-weight: 500;
+}
+
+.tcl-builder-did-field .did-label svg {
+    width: 18px;
+    height: 18px;
+    color: var(--tcl-primary);
+}
+
+.tcl-builder-did-field input[type="tel"] {
+    width: 180px;
+    height: 36px;
+    padding: 8px 12px;
+    border: 1px solid var(--tcl-gray-300);
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.tcl-builder-did-field input[type="tel"]:focus {
+    border-color: var(--tcl-primary);
+    box-shadow: 0 0 0 2px var(--tcl-primary-100);
+    outline: none;
+}
+
+.tcl-builder-did-field .save-did-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--tcl-primary);
+    color: var(--tcl-white);
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tcl-builder-did-field .save-did-btn:hover {
+    background: var(--tcl-primary-600);
+}
+
+.tcl-builder-did-field .save-did-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.tcl-builder-did-field .did-shortcode-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--tcl-gray-100);
+    border-radius: 4px;
+}
+
+.tcl-builder-did-field .did-shortcode-info code {
+    font-family: monospace;
+    color: var(--tcl-gray-700);
+}
+
+.tcl-builder-did-field .copy-shortcode-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--tcl-gray-500);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tcl-builder-did-field .copy-shortcode-btn:hover {
+    color: var(--tcl-primary);
+}
+
+.tcl-builder-did-field .copy-shortcode-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 782px) {
+    .tcl-builder-did-field {
+        top: 56px;
+        /* Adjust for mobile admin bar */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .tcl-builder-did-field {
+        top: 66px;
+        right: 10px;
+        left: 10px;
+        padding: 10px;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .tcl-builder-did-field {
+        position: sticky;
+        top: 32px;
+        /* Account for WordPress admin bar */
+        background: #fff;
+        z-index: 100;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Add spacing for WordPress editor */
+    .block-editor-editor-skeleton__content .tcl-builder-did-field {
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 4px;
+    }
+
+    /* Ensure proper spacing in classic editor */
+    .postbox .tcl-builder-did-field {
+        margin: 20px 0;
+        padding: 20px;
+    }
+
+    .did-shortcode-info {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

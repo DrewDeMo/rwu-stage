@@ -1,0 +1,125 @@
+/* Buttons */
+.add-section-btn {
+    font-family: 'Satoshi', sans-serif;
+    appearance: none;
+    border: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+.add-section-btn:focus-visible {
+    outline: 2px solid var(--orange-primary);
+    outline-offset: 2px;
+}
+
+.add-section-btn.primary {
+    background-color: var(--bg-white);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.add-section-btn.primary:hover {
+    border-color: var(--border-hover);
+    background-color: var(--bg-light);
+}
+
+.add-section-btn.primary i {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+}
+
+.add-section-btn.dashed {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    background: var(--bg-white);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    opacity: 0.8;
+}
+
+.add-section-btn.dashed:hover {
+    opacity: 1;
+    border-color: var(--orange-primary);
+    background-color: var(--orange-subtle);
+}
+
+.button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.button-content i {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.5;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.primary-btn {
+    background: var(--orange-primary);
+    color: white;
+    border: none;
+}
+
+.primary-btn:hover {
+    background: var(--orange-hover);
+}
+
+.secondary-btn {
+    background: var(--bg-white);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.secondary-btn:hover {
+    background: var(--bg-light);
+    border-color: var(--border-hover);
+}
+
+/* WordPress Button Compatibility */
+.wp-core-ui .button-primary {
+    background: var(--orange-primary);
+    border-color: var(--orange-primary);
+    color: white;
+}
+
+.wp-core-ui .button-primary:hover,
+.wp-core-ui .button-primary:focus {
+    background: var(--orange-hover);
+    border-color: var(--orange-hover);
+    color: white;
+}
+
+.wp-core-ui .button-secondary {
+    background: var(--bg-white);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.wp-core-ui .button-secondary:hover,
+.wp-core-ui .button-secondary:focus {
+    background: var(--bg-light);
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+}

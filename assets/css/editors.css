@@ -1,0 +1,578 @@
+/* Editor Styles */
+/* Shortcode Editor Styles */
+.modal-shortcode .section-title-input {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-shortcode .title-input {
+    width: 100%;
+    padding: 0;
+    border: none;
+    font-family: 'Satoshi', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+    transition: var(--transition);
+    background: transparent;
+    color: var(--text-primary);
+}
+
+.modal-shortcode .code-editor {
+    margin: 0 1rem;
+    padding: 0.75rem 1rem;
+    font-size: 13px;
+    resize: none;
+    height: auto;
+}
+
+.modal-shortcode .common-shortcodes {
+    margin: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.modal-shortcode .common-shortcodes-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.modal-shortcode .shortcode-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.modal-shortcode .shortcode-item {
+    font-family: 'JetBrains Mono', 'Menlo', monospace;
+    font-size: 0.8125rem;
+    color: var(--text-primary);
+    background: var(--bg-light);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.modal-shortcode .shortcode-item:hover {
+    background: var(--bg-white);
+    border-color: var(--border-hover);
+}
+
+/* Regular Editor Title Styles */
+.modal-lg .section-title-input {
+    margin-bottom: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-lg .title-input {
+    width: 100%;
+    padding: 0;
+    border: none;
+    font-family: 'Satoshi', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    transition: var(--transition);
+    background: transparent;
+    color: var(--text-primary);
+}
+
+.title-input:hover,
+.title-input:focus,
+.title-input:active {
+    outline: none;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+}
+
+.editor-container {
+    background: transparent;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.code-editors {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    padding: 0 1.5rem 1.5rem;
+    box-sizing: border-box;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.editor-section {
+    background: var(--editor-bg);
+    padding: 0.5rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 200px; /* Minimum height for usability */
+    max-height: calc(95vh - 200px); /* Maximum height accounting for modal header/footer */
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    overflow: hidden; /* Changed from auto to hidden */
+    transition: all 0.2s ease;
+    resize: vertical; /* Allow vertical resizing */
+}
+
+.editor-section:hover {
+    border-color: var(--border-hover);
+}
+
+.editor-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--editor-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--border-radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.editor-label i {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.5;
+    color: var(--orange-primary);
+}
+
+
+.code-editor {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    padding: 0.75rem 1rem;
+    font-family: 'JetBrains Mono', 'Menlo', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    resize: vertical;
+    background: var(--editor-bg);
+    color: var(--editor-text);
+    box-sizing: border-box;
+    tab-size: 4;
+    transition: var(--transition);
+}
+
+.code-editor:hover {
+    border-color: var(--border-hover);
+}
+
+.code-editor:focus {
+    outline: none;
+    border-color: var(--orange-primary);
+    box-shadow: 0 0 0 2px var(--orange-light);
+}
+
+.code-editor:active {
+    border-color: var(--orange-primary);
+}
+
+/* Custom Scrollbar for Code Editor */
+.code-editor::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.code-editor::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.code-editor::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    border: 3px solid var(--editor-bg);
+}
+
+.code-editor::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* WordPress TinyMCE Integration */
+.wp-editor-wrap {
+    margin-bottom: 1.5rem;
+}
+
+.wp-editor-container {
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+}
+
+.wp-editor-container textarea {
+    border: none !important;
+    padding: 1rem !important;
+    font-family: 'Menlo', monospace !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+}
+
+.mce-toolbar-grp {
+    border-bottom: 1px solid var(--border-color) !important;
+    background: var(--bg-light) !important;
+}
+
+.mce-btn {
+    border-color: transparent !important;
+    background: transparent !important;
+}
+
+.mce-btn:hover {
+    border-color: var(--border-hover) !important;
+    background: var(--bg-white) !important;
+}
+
+/* CodeMirror Integration */
+.CodeMirror {
+    height: 100% !important;
+    min-height: 150px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-sm);
+    font-family: 'JetBrains Mono', 'Menlo', monospace !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    background: #1e1f29 !important;
+    overflow: hidden;
+    transition: var(--transition);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.CodeMirror:hover {
+    border-color: var(--border-hover);
+}
+
+.CodeMirror-scroll {
+    flex: 1 1 auto;
+    min-height: 100px;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+}
+
+
+/* Ensure theme colors don't override Dracula theme */
+.CodeMirror.cm-s-dracula {
+    background: #282a36 !important;
+}
+
+.CodeMirror-focused {
+    border-color: var(--orange-primary) !important;
+    box-shadow: 0 0 0 2px var(--orange-light) !important;
+}
+
+.CodeMirror.CodeMirror-focused {
+    outline: none;
+}
+
+.CodeMirror-gutters {
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: transparent !important;
+    padding: 0 5px;
+    height: auto !important;
+}
+
+/* Custom scrollbar for CodeMirror */
+.CodeMirror-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.CodeMirror-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.CodeMirror-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.CodeMirror-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.CodeMirror-linenumber {
+    padding: 0 3px 0 0 !important;
+}
+
+.CodeMirror-selected {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.CodeMirror-line {
+    padding: 0 1rem !important;
+}
+
+.CodeMirror-activeline-background {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Enhanced Dracula Theme Tweaks */
+.cm-s-dracula .CodeMirror-cursor {
+    border-left: 2px solid #f8f8f2 !important;
+}
+
+.cm-s-dracula .CodeMirror-matchingbracket {
+    color: #50fa7b !important;
+    text-decoration: underline;
+}
+
+.cm-s-dracula .CodeMirror-nonmatchingbracket {
+    color: #ff5555 !important;
+}
+
+/* Code Folding */
+.CodeMirror-foldgutter {
+    width: 1.2em;
+}
+
+.CodeMirror-foldgutter-open,
+.CodeMirror-foldgutter-folded {
+    cursor: pointer;
+    color: #bd93f9;
+}
+
+.CodeMirror-foldgutter-open:after {
+    content: "▾";
+}
+
+.CodeMirror-foldgutter-folded:after {
+    content: "▸";
+}
+
+/* Active Line Enhancement */
+.CodeMirror-activeline-background {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.CodeMirror-activeline-gutter {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Search/Replace Styling */
+.CodeMirror-dialog {
+    background: #44475a;
+    color: #f8f8f2;
+    border-bottom: 1px solid #6272a4;
+    padding: 0.5rem 0.8rem;
+}
+
+.CodeMirror-dialog input {
+    background: #282a36;
+    color: #f8f8f2;
+    border: 1px solid #6272a4;
+    padding: 0.3rem;
+    border-radius: 3px;
+}
+
+/* Lint Markers */
+.CodeMirror-lint-marker-error {
+    background-color: transparent;
+    color: #ff5555;
+}
+
+.CodeMirror-lint-message-error {
+    background-image: none;
+    padding-left: 0;
+    color: #ff5555;
+}
+
+/* Autocomplete */
+.CodeMirror-hints {
+    background: #282a36;
+    border: 1px solid #6272a4;
+    border-radius: var(--border-radius-sm);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.CodeMirror-hint {
+    color: #f8f8f2;
+    padding: 0.5rem 1rem;
+}
+
+li.CodeMirror-hint-active {
+    background: #44475a;
+    color: #50fa7b;
+}
+
+/* Enhanced Scrollbar Styling */
+.CodeMirror-scrollbar-filler {
+    background: transparent !important;
+}
+
+.CodeMirror-simplescroll-horizontal div,
+.CodeMirror-simplescroll-vertical div {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    transition: background 0.2s ease;
+}
+
+.CodeMirror-simplescroll-horizontal div:hover,
+.CodeMirror-simplescroll-vertical div:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 1400px) {
+    .code-editors {
+        grid-template-columns: 1fr;
+    }
+    
+    .editor-section {
+        height: auto;
+        min-height: 0;
+    }
+}
+
+/* Enhanced Focus States */
+.editor-section:focus-within {
+    border-color: var(--orange-primary);
+    box-shadow: 0 0 0 1px var(--orange-light);
+}
+
+/* Resize Handle */
+.editor-section::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 12px;
+    height: 12px;
+    cursor: nwse-resize;
+    background: linear-gradient(135deg, transparent 40%, var(--orange-primary) 40%);
+    border-radius: 0 0 3px 0;
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.editor-section:hover::after {
+    opacity: 0.8;
+}
+
+/* Smooth transitions */
+.editor-section,
+.CodeMirror,
+.editor-label {
+    transition: all 0.2s ease;
+}
+
+
+/* Editor Resize Handle */
+.CodeMirror-scroll {
+    cursor: text;
+}
+
+.CodeMirror-scroll::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    cursor: nwse-resize;
+    background: linear-gradient(135deg, transparent 50%, var(--editor-line-numbers) 50%);
+    border-radius: 0 0 var(--border-radius-sm) 0;
+    opacity: 0.5;
+}
+
+/* Preview Panel */
+.preview-panel {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.preview-panel:hover {
+    box-shadow: var(--shadow);
+}
+
+.preview-panel-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.preview-panel-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.preview-panel-title i {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+    color: var(--orange-primary);
+}
+
+.preview-content {
+    padding: 1rem;
+    background: var(--bg-light);
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition);
+}
+
+/* Preview Panel Loading State */
+.preview-content.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.preview-content.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg,
+            transparent,
+            var(--orange-light),
+            transparent);
+    animation: preview-loading 1.5s infinite;
+}
+
+@keyframes preview-loading {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}

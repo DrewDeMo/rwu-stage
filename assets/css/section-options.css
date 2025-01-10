@@ -1,0 +1,167 @@
+/* Section Options */
+.section-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.section-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    width: 100%;
+}
+
+.section-option:hover {
+    border-color: var(--orange-primary);
+    background: var(--orange-subtle);
+}
+
+.section-option i {
+    width: 24px;
+    height: 24px;
+    stroke-width: 1.5;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.section-option:hover i {
+    color: var(--orange-primary);
+}
+
+.option-details {
+    flex: 1;
+    text-align: left;
+}
+
+.option-details h4 {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.option-details p {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.arrow-icon {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.section-option:hover .arrow-icon {
+    color: var(--orange-primary);
+}
+
+/* WordPress Integration */
+.section-option.wp-block {
+    border-left: 3px solid var(--orange-primary);
+}
+
+.section-option.wp-block:hover {
+    border-left-color: var(--orange-hover);
+}
+
+/* Section Categories */
+.section-categories {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.category-tab {
+    padding: 0.5rem 1rem;
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.category-tab:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-light);
+}
+
+.category-tab.active {
+    background: var(--orange-primary);
+    border-color: var(--orange-primary);
+    color: white;
+}
+
+/* Search Bar */
+.section-search {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.section-search i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}
+
+.section-search input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-family: 'Satoshi', sans-serif;
+    font-size: 0.875rem;
+    transition: var(--transition);
+}
+
+.section-search input:focus {
+    outline: none;
+    border-color: var(--orange-primary);
+    box-shadow: 0 0 0 2px var(--orange-light);
+}
+
+/* Empty State */
+.empty-state {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    width: 32px;
+    height: 32px;
+    stroke-width: 1.5;
+    margin-bottom: 1rem;
+}
+
+.empty-state h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 0.875rem;
+}

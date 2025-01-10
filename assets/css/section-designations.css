@@ -1,0 +1,124 @@
+/**
+ * TCL Builder Section Designations
+ */
+
+/* Store Sections (Blue) */
+.section-container[data-designation="store"] .section-header {
+    background: linear-gradient(135deg, var(--blue-primary), var(--blue-primary-dark));
+}
+
+.section-container[data-designation="store"] .section-header .action-btn:hover {
+    background-color: var(--blue-hover);
+}
+
+.section-container[data-designation="store"].ui-sortable-placeholder {
+    border-color: var(--blue-primary);
+}
+
+/* Library Sections (Orange - Default) */
+.section-container[data-designation="library"] .section-header,
+.section-container[data-designation="default"] .section-header {
+    background: linear-gradient(135deg, var(--orange-primary), var(--orange-primary-dark));
+}
+
+.section-container[data-designation="library"] .section-header .action-btn:hover,
+.section-container[data-designation="default"] .section-header .action-btn:hover {
+    background-color: var(--orange-hover);
+}
+
+.section-container[data-designation="library"].ui-sortable-placeholder,
+.section-container[data-designation="default"].ui-sortable-placeholder {
+    border-color: var(--orange-primary);
+}
+
+/* Code Sections (Grey) */
+.section-container[data-designation="code"] .section-header {
+    background: linear-gradient(135deg, var(--grey-primary), var(--grey-primary-dark));
+}
+
+.section-container[data-designation="code"] .section-header .action-btn:hover {
+    background-color: var(--grey-hover);
+}
+
+.section-container[data-designation="code"].ui-sortable-placeholder {
+    border-color: var(--grey-primary);
+}
+
+/* Designation Selector */
+.designation-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-right: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius-sm);
+    background: rgba(255, 255, 255, 0.1);
+    transition: var(--transition);
+}
+
+.designation-selector:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.designation-selector select {
+    padding: 0.25rem 0.5rem;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    background: transparent;
+    color: white;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: var(--transition);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding-right: 1.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.25rem center;
+    background-size: 1rem;
+}
+
+.designation-selector select:focus {
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.designation-selector select option {
+    background: white;
+    color: var(--text-primary);
+    padding: 0.5rem;
+}
+
+/* Designation Icons */
+.designation-selector i[data-lucide] {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2.5;
+    transition: var(--transition);
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+}
+
+/* Icon Colors */
+[data-designation="store"] .designation-selector i[data-lucide] {
+    color: var(--blue-hover) !important;
+}
+
+[data-designation="library"] .designation-selector i[data-lucide],
+[data-designation="default"] .designation-selector i[data-lucide] {
+    color: var(--orange-hover) !important;
+}
+
+[data-designation="code"] .designation-selector i[data-lucide] {
+    color: var(--grey-hover) !important;
+}
+
+.designation-selector i[data-lucide] svg {
+    stroke: currentColor !important;
+}
+
+/* Hover states */
+.designation-selector:hover i[data-lucide] {
+    transform: scale(1.1);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}

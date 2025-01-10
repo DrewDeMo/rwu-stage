@@ -1,0 +1,337 @@
+/**
+ * TCL Builder Admin Styles
+ */
+
+/* Import builder styles */
+@import 'variables.css';
+@import 'base.css';
+@import 'buttons.css';
+@import 'sections.css';
+@import 'modals.css';
+@import 'editors.css';
+@import 'shortcode.css';
+@import 'section-options.css';
+
+/* WordPress Admin Integration */
+#tcl-builder {
+    background: var(--bg-white);
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+}
+
+#tcl-builder .inside {
+    margin: 0;
+    padding: 0;
+}
+
+#tcl-builder .handlediv,
+#tcl-builder .hndle {
+    display: none;
+}
+
+/* Builder Container */
+.tcl-builder-container {
+    padding: 2rem;
+    background: var(--bg-light);
+}
+
+/* Fix z-index for modals */
+.modal-overlay {
+    z-index: 999999;
+    /* Above WP admin bar */
+}
+
+/* CodeMirror Integration */
+.tcl-builder-container .CodeMirror {
+    height: 300px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition);
+}
+
+.tcl-builder-container .CodeMirror:hover {
+    border-color: var(--border-hover);
+}
+
+.tcl-builder-container .CodeMirror-focused {
+    border-color: var(--orange-primary) !important;
+    box-shadow: 0 0 0 2px var(--orange-light) !important;
+}
+
+.tcl-builder-container .CodeMirror.CodeMirror-focused {
+    outline: none;
+}
+
+/* WordPress Media Modal Integration */
+.tcl-builder-container .media-modal {
+    z-index: 1000000;
+    /* Above our modals */
+}
+
+.tcl-builder-container .media-modal-backdrop {
+    z-index: 999999;
+}
+
+/* TinyMCE Integration */
+.tcl-builder-container .wp-editor-wrap {
+    margin-bottom: 1.5rem;
+}
+
+.tcl-builder-container .wp-editor-container {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+}
+
+.tcl-builder-container .wp-editor-container textarea {
+    border: none;
+}
+
+.tcl-builder-container .mce-toolbar-grp {
+    border-bottom: 1px solid var(--border-color) !important;
+    background: var(--bg-light) !important;
+}
+
+/* Color Picker Integration */
+.tcl-builder-container .wp-picker-container {
+    position: relative;
+}
+
+.tcl-builder-container .wp-picker-holder {
+    position: absolute;
+    z-index: 1;
+}
+
+/* Responsive Admin */
+@media screen and (max-width: 782px) {
+    .tcl-builder-container {
+        padding: 1rem;
+    }
+
+    .modal-lg {
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+        max-height: calc(100vh - 2rem);
+    }
+
+    .code-editors {
+        flex-direction: column;
+    }
+
+    .editor-section {
+        width: 100%;
+    }
+}
+
+/* RTL Support */
+.rtl .tcl-builder-container {
+    direction: rtl;
+    text-align: right;
+}
+
+.rtl .section-header .action-btn {
+    margin-left: 0;
+    margin-right: 0.5rem;
+}
+
+.rtl .modal-close {
+    right: auto;
+    left: 1rem;
+}
+
+/* Loading and Autosave States */
+.tcl-builder-container.is-loading,
+.tcl-builder-container.is-autosaving {
+    position: relative;
+}
+
+.tcl-builder-container.is-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    z-index: 1000;
+}
+
+.tcl-builder-container.is-loading::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--orange-primary);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 1001;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Status Indicator */
+.tcl-builder-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    margin-left: 1rem;
+    font-size: 0.8125rem;
+}
+
+.tcl-builder-status .status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+}
+
+.tcl-builder-status[data-status="unsaved"] .status-indicator {
+    background: var(--orange-primary);
+}
+
+.tcl-builder-status[data-status="saved"] .status-indicator {
+    background: #22c55e;
+}
+
+.tcl-builder-status[data-status="autosaved"] .status-indicator {
+    background: #3b82f6;
+}
+
+.tcl-builder-status .status-text {
+    color: var(--text-muted);
+}
+
+/* Unsaved Changes Indicator */
+.tcl-builder-container.has-unsaved-changes {
+    position: relative;
+}
+
+.tcl-builder-container.has-unsaved-changes::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--orange-primary);
+}
+
+/* Autosave Loading Indicator */
+.tcl-builder-container.is-autosaving::after {
+    content: '';
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #3b82f6;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 1001;
+}
+
+/* Error States */
+.tcl-builder-error {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #fee2e2;
+    border: 1px solid #ef4444;
+    border-radius: var(--border-radius-sm);
+    color: #991b1b;
+}
+
+/* Success States */
+.tcl-builder-success {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #dcfce7;
+    border: 1px solid #22c55e;
+    border-radius: var(--border-radius-sm);
+    color: #166534;
+}
+
+/* Tooltips */
+.tcl-builder-tooltip {
+    position: relative;
+}
+
+.tcl-builder-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5rem;
+    background: var(--text-primary);
+    color: white;
+    font-size: 0.75rem;
+    border-radius: var(--border-radius-sm);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition);
+}
+
+.tcl-builder-tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Focus Styles */
+.tcl-builder-container *:focus {
+    outline: none;
+    border-color: var(--orange-primary);
+    box-shadow: 0 0 0 2px var(--orange-light);
+}
+
+.tcl-builder-container *:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+}
+
+.tcl-builder-container input:focus,
+.tcl-builder-container textarea:focus,
+.tcl-builder-container select:focus {
+    outline: none;
+    border-color: var(--orange-primary);
+    box-shadow: 0 0 0 2px var(--orange-light);
+    background: var(--bg-white);
+}
+
+/* Accessibility */
+.tcl-builder-container .screen-reader-text {
+    border: 0;
+    clip: rect(1px, 1px, 1px, 1px);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+    word-wrap: normal !important;
+}
+
+.tcl-builder-container .screen-reader-text:focus {
+    clip: auto !important;
+    clip-path: none;
+    display: block;
+    height: auto;
+    left: 5px;
+    padding: 15px 23px 14px;
+    text-decoration: none;
+    top: 5px;
+    width: auto;
+    z-index: 100000;
+}

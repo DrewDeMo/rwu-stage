@@ -1,0 +1,175 @@
+/* Shared Sections Base Styles */
+.tcl-shared-section-host {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Ensure proper display of shadow content */
+.tcl-shared-root {
+    display: block;
+    width: 100%;
+    height: auto;
+    visibility: visible !important;
+}
+
+/* Content wrapper styles */
+.tcl-shared-content {
+    display: block;
+    width: 100%;
+    height: auto;
+    visibility: visible !important;
+}
+
+/* Force visibility of shadow DOM content */
+.tcl-builder-section-host[data-tcl-shared="true"]::part(container) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Frontend Styles */
+.tcl-shared-section {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    position: relative;
+}
+
+.tcl-shared-section .tcl-builder-section {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.tcl-shared-section .tcl-builder-section-host {
+    display: block;
+    width: 100%;
+    min-height: 20px;
+    /* Ensure visibility while loading */
+    position: relative;
+}
+
+/* Loading state */
+.tcl-shared-section .tcl-builder-section-host:empty::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: tcl-shared-section-spin 1s linear infinite;
+}
+
+@keyframes tcl-shared-section-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Admin Styles */
+.post-type-shared_section #poststuff {
+    padding-top: 0;
+}
+
+.post-type-shared_section #post-body.columns-2 #postbox-container-1 {
+    margin-top: 0;
+}
+
+/* Settings Page */
+.shared-sections-settings {
+    max-width: 800px;
+    margin: 20px 0;
+}
+
+.shared-sections-settings .form-table {
+    margin-top: 2em;
+}
+
+.shared-sections-settings .regular-text {
+    width: 100%;
+    max-width: 500px;
+}
+
+.shared-sections-settings .description {
+    margin-top: 0.5em;
+    color: #666;
+}
+
+/* Shortcode Preview */
+.shared-section-preview {
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.shared-section-preview code {
+    display: block;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+/* Error States */
+.tcl-shared-section-error {
+    padding: 15px;
+    margin: 10px 0;
+    background: #fff3f4;
+    border: 1px solid #dc3545;
+    border-radius: 4px;
+    color: #dc3545;
+}
+
+/* Loading States */
+.tcl-shared-section-loading {
+    padding: 20px;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.tcl-shared-section-loading::after {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #dee2e6;
+    border-top-color: #007bff;
+    border-radius: 50%;
+    animation: shared-section-spin 1s linear infinite;
+}
+
+@keyframes shared-section-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive Styles */
+@media screen and (max-width: 782px) {
+    .shared-sections-settings {
+        margin: 10px;
+    }
+
+    .shared-sections-settings .form-table td {
+        padding: 15px 0;
+    }
+
+    .shared-sections-settings .regular-text {
+        max-width: 100%;
+    }
+}
