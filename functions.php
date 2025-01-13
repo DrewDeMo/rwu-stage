@@ -351,7 +351,8 @@ function tcl_builder_admin_scripts() {
         'editors',   // Editor initialization
         'modal',     // Modal management
         'wordpress', // WordPress integration
-        'did'       // Campaign DID functionality
+        'did',      // Campaign DID functionality
+        'contact-form' // Contact Form functionality
     );
 
     foreach ($modules as $module) {
@@ -378,9 +379,9 @@ function tcl_builder_admin_scripts() {
         'sections' => $sections, // Pass array directly, wp_localize_script will handle JSON encoding
         'templateUri' => get_template_directory_uri(),
         'version' => TCL_BUILDER_VERSION,
-        'campaignDid' => get_post_meta($post_id, TCL_Builder_DID::META_KEY, true)
+        'campaignDid' => get_post_meta($post_id, TCL_Builder_DID::META_KEY, true),
+        'contactForm' => get_post_meta($post_id, TCL_Builder_Contact_Form::META_KEY, true)
     ));
-
 }
 add_action('admin_enqueue_scripts', 'tcl_builder_admin_scripts');
 
@@ -408,6 +409,7 @@ require_once TCL_BUILDER_DIR . '/inc/builder/class-tcl-builder.php';
 require_once TCL_BUILDER_DIR . '/inc/builder/class-tcl-builder-ajax.php';
 require_once TCL_BUILDER_DIR . '/inc/builder/class-tcl-builder-meta.php';
 require_once TCL_BUILDER_DIR . '/inc/builder/class-tcl-builder-did.php';
+require_once TCL_BUILDER_DIR . '/inc/builder/class-tcl-builder-contact-form.php';
 require_once TCL_BUILDER_DIR . '/inc/builder/class-tcl-builder-shared-sections.php';
 
 // Initialize the builder and shared sections
