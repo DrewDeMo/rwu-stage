@@ -317,11 +317,28 @@
             }
         },
 
+        handleImport() {
+            const fileInput = jQuery('.sections-import-file');
+            if (!fileInput.length) {
+                jQuery('.content-sections').append(`
+                    <input type="file" class="sections-import-file" style="display: none;" accept="application/json">
+                `);
+            }
+            jQuery('.sections-import-file').trigger('click');
+        },
+
         bindEvents() {
             // Add section buttons
             jQuery('.add-section-btn').on('click', (e) => {
                 e.preventDefault();
                 this.open('main');
+            });
+
+            // Add import button handling
+            jQuery('.import-sections-btn').off('click').on('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.handleImport();
             });
 
             // Section type selection

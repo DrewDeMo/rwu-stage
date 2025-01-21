@@ -574,22 +574,35 @@
 
         handleImportFile(e) {
             const file = e.target.files[0];
-            if (!file) return;
+            if (!file) {
+                console.log('No file selected');
+                return;
+            }
 
+            console.log('Reading file:', file.name);
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = (event) => {
                 try {
-                    const importData = JSON.parse(e.target.result);
+                    console.log('File content:', event.target.result.substring(0, 100) + '...');
+                    const importData = JSON.parse(event.target.result);
                     this.importSections(importData);
                 } catch (error) {
+                    console.error('Import error:', error);
                     TCLBuilder.Events.publish('notification:error', {
                         message: 'Invalid import file format'
                     });
                 }
             };
+            reader.onerror = (error) => {
+                console.error('FileReader error:', error);
+                TCLBuilder.Events.publish('notification:error', {
+                    message: 'Error reading file'
+                });
+            };
             reader.readAsText(file);
             e.target.value = ''; // Reset file input
         },
+
 
 
         importSections(importData) {
@@ -608,8 +621,8 @@
                     content: section.content
                 }));
 
-                // Update sections array
-                TCLBuilder.Core.sections = processedSections;
+                // Append new sections to existing ones instead of replacing
+                TCLBuilder.Core.sections = [...TCLBuilder.Core.sections, ...processedSections];
                 
                 // Render and save
                 this.renderSections();
@@ -642,9 +655,21 @@
             }
 
             // Import/Export and Add Section events
-            jQuery(document).on('click', '.action-btn[aria-label="Export section"]', this.handleExport.bind(this));
-            jQuery(document).on('click', '.import-sections-btn', this.handleImportClick.bind(this));
-            jQuery(document).on('change', '.sections-import-file', this.handleImportFile.bind(this));
+            jQuery(document).off('click', '.action-btn[aria-label="Export section"]').on('click', '.action-btn[aria-label="Export section"]', this.handleExport.bind(this));
+            jQuery(document).off('click', '.import-sections-btn').on('click', '.import-sections-btn', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const fileInput = jQuery('.sections-import-file');
+                if (fileInput.length) {
+                    fileInput.trigger('click');
+                } else {
+                    console.error('Import file input not found');
+                }
+            });
+            jQuery(document).off('change', '.sections-import-file').on('change', '.sections-import-file', (e) => {
+                console.log('File selected:', e.target.files[0]);
+                this.handleImportFile(e);
+            });
             jQuery(document).on('click', '.add-section-btn-top', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
