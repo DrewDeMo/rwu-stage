@@ -202,42 +202,72 @@ class TCL_Builder {
             <div class="modal-overlay editor-modal" data-modal="editor" aria-hidden="true">
                 <div class="modal modal-lg" role="dialog" aria-labelledby="editor-modal-title">
                     <div class="modal-header">
-                        <h3 id="editor-modal-title" class="modal-title"><?php _e('HTML Editor', 'tcl-builder'); ?></h3>
+                        <h3 id="editor-modal-title" class="modal-title">
+                            <i data-lucide="code-2"></i>
+                            <?php _e('HTML Editor', 'tcl-builder'); ?>
+                        </h3>
                         <button class="modal-close" aria-label="Close modal">
                             <i data-lucide="x"></i>
                         </button>
                     </div>
                     <div class="modal-content">
-                        <div class="section-title-input">
-                            <label for="section-title" class="input-label"><?php _e('Section Title', 'tcl-builder'); ?></label>
-                            <div class="input-wrapper">
-                                <i data-lucide="type"></i>
-                                <input type="text" id="section-title" class="title-input" placeholder="<?php esc_attr_e('Enter section title...', 'tcl-builder'); ?>">
+                        <div class="section-meta">
+                            <div class="input-group">
+                                <label for="section-title"><?php _e('Section Title', 'tcl-builder'); ?></label>
+                                <div class="input-wrapper">
+                                    <i data-lucide="type"></i>
+                                    <input type="text" 
+                                           id="section-title" 
+                                           class="title-input" 
+                                           placeholder="<?php esc_attr_e('Enter section title...', 'tcl-builder'); ?>">
+                                </div>
                             </div>
                         </div>
-                        
+
                         <div class="editor-container">
-                            <div class="code-editors">
-                                <div class="editor-section">
-                                    <label class="editor-label">
+                            <div class="editor-wrapper">
+                                <div class="editor-tabs">
+                                    <button type="button" class="tab-btn active" data-tab="html">
                                         <i data-lucide="code"></i>
                                         <?php _e('HTML', 'tcl-builder'); ?>
-                                    </label>
-                                    <textarea class="code-editor html-editor" placeholder="<?php esc_attr_e('Enter HTML code...', 'tcl-builder'); ?>"></textarea>
-                                </div>
-                                <div class="editor-section">
-                                    <label class="editor-label">
+                                    </button>
+                                    <button type="button" class="tab-btn" data-tab="css">
                                         <i data-lucide="palette"></i>
                                         <?php _e('CSS', 'tcl-builder'); ?>
-                                    </label>
-                                    <textarea class="code-editor css-editor" placeholder="<?php esc_attr_e('Enter CSS code...', 'tcl-builder'); ?>"></textarea>
+                                    </button>
+                                    <button type="button" class="tab-btn" data-tab="js">
+                                        <i data-lucide="file-code"></i>
+                                        <?php _e('JavaScript', 'tcl-builder'); ?>
+                                    </button>
+                                </div>
+
+                                <div class="editor-panels">
+                                    <div class="editor-panel active" data-panel="html">
+                                        <textarea class="code-editor html-editor" 
+                                                placeholder="<?php esc_attr_e('Enter HTML code...', 'tcl-builder'); ?>"></textarea>
+                                    </div>
+                                    <div class="editor-panel" data-panel="css">
+                                        <textarea class="code-editor css-editor" 
+                                                placeholder="<?php esc_attr_e('Enter CSS code...', 'tcl-builder'); ?>"></textarea>
+                                    </div>
+                                    <div class="editor-panel" data-panel="js">
+                                        <textarea class="code-editor js-editor" 
+                                                placeholder="<?php esc_attr_e('Enter JavaScript code...', 'tcl-builder'); ?>"></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="modal-footer">
-                            <button class="btn secondary-btn"><?php _e('Cancel', 'tcl-builder'); ?></button>
-                            <button class="btn primary-btn"><?php _e('Save Changes', 'tcl-builder'); ?></button>
+                            <button class="btn secondary-btn">
+                                <i data-lucide="x"></i>
+                                <?php _e('Cancel', 'tcl-builder'); ?>
+                            </button>
+                            <button class="btn primary-btn save-section">
+                                <i data-lucide="save"></i>
+                                <?php _e('Save Changes', 'tcl-builder'); ?>
+                            </button>
+
                         </div>
                     </div>
                 </div>
@@ -320,6 +350,8 @@ class TCL_Builder {
         // Enqueue builder styles
         wp_enqueue_style('tcl-builder-variables', TCL_BUILDER_URI . '/assets/css/variables.css', array(), TCL_BUILDER_VERSION);
         wp_enqueue_style('tcl-builder-designations', TCL_BUILDER_URI . '/assets/css/section-designations.css', array('tcl-builder-variables'), TCL_BUILDER_VERSION);
+        wp_enqueue_style('tcl-builder-modal', TCL_BUILDER_URI . '/assets/css/modal.css', array('tcl-builder-variables'), TCL_BUILDER_VERSION);
+        wp_enqueue_style('tcl-builder-editor', TCL_BUILDER_URI . '/assets/css/editor.css', array('tcl-builder-variables'), TCL_BUILDER_VERSION);
         
         // Enqueue builder scripts and dependencies
         wp_enqueue_script('jquery-ui-sortable');
@@ -330,6 +362,7 @@ class TCL_Builder {
         wp_enqueue_script('tcl-builder-sections', TCL_BUILDER_URI . '/assets/js/builder/sections.js', array('tcl-builder-core', 'jquery-ui-sortable'), TCL_BUILDER_VERSION, true);
         wp_enqueue_script('tcl-builder-wordpress', TCL_BUILDER_URI . '/assets/js/builder/wordpress.js', array('tcl-builder-core'), TCL_BUILDER_VERSION, true);
         wp_enqueue_script('tcl-builder-drag-drop', TCL_BUILDER_URI . '/assets/js/builder/drag-drop.js', array('tcl-builder-core', 'jquery-ui-sortable'), TCL_BUILDER_VERSION, true);
+        wp_enqueue_script('tcl-builder-tabs', TCL_BUILDER_URI . '/assets/js/builder/tabs.js', array('jquery', 'tcl-builder-core'), TCL_BUILDER_VERSION, true);
 
         // Localize script data
         wp_localize_script('tcl-builder-core', 'tclBuilderData', array(
@@ -455,7 +488,8 @@ class TCL_Builder {
                     // Process HTML content
                     $sanitized_section['content'] = array(
                         'html' => $section['content']['html'] ?? '',
-                        'css' => $this->sanitize_css($section['content']['css'] ?? '')
+                        'css' => $this->sanitize_css($section['content']['css'] ?? ''),
+                        'js' => isset($section['content']['js']) ? $section['content']['js'] : ''
                     );
                 } else {
                     // Process shortcode content
@@ -642,7 +676,7 @@ class TCL_Builder {
         }
 
         if ($section['type'] === 'html' && (!is_array($section['content']) || 
-            !isset($section['content']['html']))) {
+            !isset($section['content']['html']) || !isset($section['content']['css']))) {
             $this->logger->log('Invalid HTML section content', 'warning', array(
                 'section_id' => $section['id']
             ));
@@ -666,6 +700,7 @@ class TCL_Builder {
         try {
             $css = !empty($section['content']['css']) ? $this->sanitize_css($section['content']['css']) : '';
             $html = isset($section['content']['html']) ? $section['content']['html'] : '';
+            $js = isset($section['content']['js']) ? $section['content']['js'] : '';
 
             // Add default styles to prevent unwanted spacing
             $css = ":host { display: block; margin: 0; padding: 0; } :host > div { margin: 0; padding: 0; }\n" . $css;
@@ -696,72 +731,33 @@ class TCL_Builder {
                         }
                     }
                     
-                    // For safety, return empty if not a known template tag
                     return '';
                 },
                 $html
             );
-            
-            // Also handle shorthand template tags
-            $processed_html = str_replace(
-                array(
-                    '{template_directory_uri}',
-                    '%template_directory_uri%',
-                    '{stylesheet_directory_uri}',
-                    '{theme_file_uri}'
-                ),
-                array(
-                    esc_url(get_template_directory_uri()),
-                    esc_url(get_template_directory_uri()),
-                    esc_url(get_stylesheet_directory_uri()),
-                    esc_url(get_theme_file_uri())
-                ),
-                $processed_html
-            );
 
-            // Extract scripts from HTML to execute them properly
-            $dom = new DOMDocument();
-            libxml_use_internal_errors(true);
-            
-            // Wrap in HTML5 structure to prevent auto-adding of p tags
-            $wrapped_html = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>' . $processed_html . '</body></html>';
-            @$dom->loadHTML($wrapped_html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-            libxml_clear_errors();
-
-            $scripts = array();
-            $body = $dom->getElementsByTagName('body')->item(0);
-            
-            // Extract scripts
-            foreach ($dom->getElementsByTagName('script') as $script) {
-                $scripts[] = $dom->saveHTML($script);
-                $script->parentNode->removeChild($script);
-            }
-
-            // Get only the body content without wrapping tags
-            $html_without_scripts = '';
-            foreach ($body->childNodes as $child) {
-                $html_without_scripts .= $dom->saveHTML($child);
-            }
-            
             // Create a template for the Shadow DOM content
             echo '<template id="' . esc_attr($section_id) . '-template">';
             
-            // Add FontAwesome styles
+            // Add FontAwesome and jQuery
             echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
+            if (strpos($js, 'jQuery') !== false || strpos($js, '$') !== false) {
+                echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
+            }
             
             // Add wrapper div and custom CSS
             echo '<style>' . $css . '</style>';
             echo '<div class="section-content">';
             
-            // Process shortcodes in HTML content (excluding scripts)
-            $processed_html = do_shortcode($html_without_scripts);
+            // Process shortcodes in HTML content
+            $processed_html = do_shortcode($processed_html);
             echo apply_filters('tcl_builder_section_html', $processed_html, $section, $post_id);
             echo '</div></template>';
 
-            // Create the host element with minimal styling
+            // Create the host element
             echo '<div id="' . esc_attr($section_id) . '" class="tcl-builder-section-host" style="display: block; margin: 0; padding: 0;"></div>';
 
-            // Attach Shadow DOM and execute scripts
+            // Initialize Shadow DOM and execute JavaScript
             echo '<script>
                 (function() {
                     const host = document.getElementById("' . esc_js($section_id) . '");
@@ -774,32 +770,26 @@ class TCL_Builder {
                         window.lucide.createIcons(shadowRoot);
                     }
 
-                    // Execute section scripts
-                    const scripts = ' . wp_json_encode($scripts) . ';
-                    scripts.forEach(scriptHTML => {
-                        const scriptEl = document.createElement("script");
-                        const originalScript = new DOMParser().parseFromString(scriptHTML, "text/html").querySelector("script");
-                        
-                        // Copy script content or src
-                        if (originalScript.src) {
-                            scriptEl.src = originalScript.src;
-                        } else {
-                            scriptEl.textContent = originalScript.textContent;
+                    // Execute section JavaScript within shadow DOM context
+                    const sectionJS = `' . str_replace('`', '\\`', $js) . '`;
+                    if (sectionJS) {
+                        try {
+                            const scriptEl = document.createElement("script");
+                            scriptEl.id = "' . esc_js($section_id) . '-script";
+                            scriptEl.textContent = `
+                                (function(root, $) {
+                                    try {
+                                        ${sectionJS}
+                                    } catch (error) {
+                                        console.error("Error in section script:", error);
+                                    }
+                                })(document.getElementById("' . esc_js($section_id) . '").shadowRoot, window.jQuery);
+                            `;
+                            shadowRoot.appendChild(scriptEl);
+                        } catch (error) {
+                            console.error("Error executing section JavaScript:", error);
                         }
-                        
-                        // Copy any other attributes
-                        Array.from(originalScript.attributes).forEach(attr => {
-                            if (attr.name !== "src" && attr.name !== "type") {
-                                scriptEl.setAttribute(attr.name, attr.value);
-                            }
-                        });
-
-                        // Set type if present, default to text/javascript
-                        scriptEl.type = originalScript.type || "text/javascript";
-                        
-                        // Append script to document
-                        document.body.appendChild(scriptEl);
-                    });
+                    }
                 })();
             </script>';
             
@@ -813,6 +803,8 @@ class TCL_Builder {
             echo '</div>';
         }
     }
+
+
 
     /**
      * Render shortcode section

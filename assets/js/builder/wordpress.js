@@ -89,7 +89,8 @@
             if (section.type === 'html') {
                 return typeof section.content === 'object' &&
                     'html' in section.content &&
-                    'css' in section.content;
+                    'css' in section.content &&
+                    'js' in section.content;  // Add JavaScript validation
             }
 
             return typeof section.content === 'string';
@@ -107,7 +108,8 @@
                 if (section.type === 'html') {
                     preparedSection.content = {
                         html: section.content.html || '',
-                        css: section.content.css || ''
+                        css: section.content.css || '',
+                        js: section.content.js || ''  // Add JavaScript content
                     };
                 } else {
                     preparedSection.content = section.content || '';

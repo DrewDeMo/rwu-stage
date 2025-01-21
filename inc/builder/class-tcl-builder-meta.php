@@ -65,9 +65,15 @@ class TCL_Builder_Meta {
             $section['id'] = isset($section['id']) ? intval($section['id']) : time();
             
             if ($section['type'] === 'html' && isset($section['content'])) {
+                // Handle legacy sections without js field
+                if (!isset($section['content']['js'])) {
+                    $section['content']['js'] = '';
+                }
+                
                 $section['content'] = array(
-                    'html' => base64_decode($section['content']['html']),
-                    'css' => base64_decode($section['content']['css'])
+                    'html' => base64_decode($section['content']['html'] ?? ''),
+                    'css' => base64_decode($section['content']['css'] ?? ''),
+                    'js' => base64_decode($section['content']['js'])
                 );
             }
             
@@ -148,7 +154,8 @@ class TCL_Builder_Meta {
                     // Base64 encode only if not already encoded
                     $processed_section['content'] = array(
                         'html' => base64_encode(base64_decode($html_content, true) ?: $html_content),
-                        'css' => base64_encode(base64_decode($css_content, true) ?: $css_content)
+                        'css' => base64_encode(base64_decode($css_content, true) ?: $css_content),
+                        'js' => base64_encode(base64_decode($content['js'] ?? '', true) ?: ($content['js'] ?? ''))
                     );
                 } else {
                     // For non-HTML sections, validate and store content

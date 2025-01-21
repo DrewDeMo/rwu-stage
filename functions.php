@@ -317,10 +317,53 @@ function tcl_builder_admin_scripts() {
         )
     ));
 
-    // Combine settings for JavaScript
-    $cm_settings['codeEditor'] = array(
-        'html' => $html_settings['codemirror'],
-        'css' => $css_settings['codemirror']
+    // Initialize CodeMirror for JavaScript
+    $js_settings = wp_enqueue_code_editor(array(
+        'type' => 'application/javascript',
+        'codemirror' => array(
+            'mode' => 'javascript',
+            'lineNumbers' => true,
+            'lineWrapping' => true,
+            'styleActiveLine' => true,
+            'continueComments' => true,
+            'autoCloseBrackets' => true,
+            'matchBrackets' => true,
+            'theme' => 'dracula',
+            'indentUnit' => 4,
+            'smartIndent' => true,
+            'indentWithTabs' => false,
+            'viewportMargin' => PHP_INT_MAX,
+            'autoRefresh' => true,
+            'lint' => true,
+            'gutters' => array('CodeMirror-lint-markers', 'CodeMirror-linenumbers'),
+            'extraKeys' => array(
+                'Ctrl-Space' => 'autocomplete',
+                'Ctrl-/' => 'toggleComment',
+                'Cmd-/' => 'toggleComment',
+                'Alt-F' => 'findPersistent',
+                'Ctrl-F' => 'findPersistent'
+            ),
+            'addon' => array(
+                'edit/closebrackets',
+                'edit/matchbrackets',
+                'selection/active-line',
+                'search/searchcursor',
+                'search/search',
+                'lint/lint',
+                'lint/javascript-lint',
+                'hint/show-hint',
+                'hint/javascript-hint'
+            )
+        )
+    ));
+
+    // Update settings combination to include JavaScript
+    $cm_settings = array(
+        'codeEditor' => array(
+            'html' => $html_settings,
+            'css' => $css_settings,
+            'js' => $js_settings
+        )
     );
 
     // While the Dracula theme is configured in wp_enqueue_code_editor,

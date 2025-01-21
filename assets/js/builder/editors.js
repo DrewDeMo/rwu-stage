@@ -79,8 +79,28 @@
                     }
                 );
 
+                TCLBuilder.Core.editors.js = wp.codeEditor.initialize(
+                    $('.js-editor'),
+                    {
+                        ...tclBuilderCodeMirror.codeEditor.js,
+                        codemirror: {
+                            ...tclBuilderCodeMirror.codeEditor.js?.codemirror,
+                            ...sharedSettings,
+                            mode: 'javascript',
+                            autoCloseBrackets: true,
+                            matchBrackets: true,
+                            continueComments: "Enter",
+                            extraKeys: {
+                                ...sharedSettings.extraKeys,
+                                "Ctrl-/": "toggleComment",
+                                "Cmd-/": "toggleComment"
+                            }
+                        }
+                    }
+                );
+
                 // Add error recovery and enhanced event handling
-                [TCLBuilder.Core.editors.html, TCLBuilder.Core.editors.css].forEach(editor => {
+                [TCLBuilder.Core.editors.html, TCLBuilder.Core.editors.css, TCLBuilder.Core.editors.js].forEach(editor => {
                     if (editor?.codemirror) {
                         const cm = editor.codemirror;
 

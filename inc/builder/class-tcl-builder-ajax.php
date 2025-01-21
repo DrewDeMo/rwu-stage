@@ -157,7 +157,8 @@ class TCL_Builder_AJAX {
 
                         $normalized_section['content'] = array(
                             'html' => wp_kses_post($section['content']['html']),
-                            'css' => wp_strip_all_tags($section['content']['css'])
+                            'css' => wp_strip_all_tags($section['content']['css']),
+                            'js' => isset($section['content']['js']) ? $section['content']['js'] : ''
                         );
                     } else {
                         if (!is_string($section['content'])) {

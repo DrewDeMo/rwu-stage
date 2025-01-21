@@ -35,6 +35,15 @@
     --success-bg: #d4edda;
     --success-border: #c3e6cb;
     
+    /* Editor Colors */
+    --editor-bg: #1e1e1e;
+    --tab-bg: #252526;
+    --hover-bg: rgba(255, 255, 255, 0.1);
+    --input-bg: #ffffff;
+    --icon-color: #666666;
+    --primary-color: var(--blue-primary);
+    --text-color: #333333;
+    
     /* Shadows */
     --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 4px 6px rgba(0, 0, 0, 0.1);

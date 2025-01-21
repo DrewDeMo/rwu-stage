@@ -18,37 +18,35 @@
             const modal = jQuery(`.modal-overlay[data-modal="${type}"]`);
             const modalDialog = modal.find('.modal-dialog');
 
-            // Store last active element for focus restoration
             this.lastActiveElement = document.activeElement;
 
-            // Reset modal state
             modal.find('input, textarea').val('');
             modal.removeData('section-id');
 
-            // Set proper ARIA attributes
             modalDialog.attr({
                 'role': 'dialog',
                 'aria-modal': 'true',
                 'aria-labelledby': `${type}-modal-title`
             });
 
-            // Make other content inert, excluding the modal and its parents
             jQuery('body > *').not(modal).not(modal.parents()).each(function() {
                 if (!jQuery(this).attr('inert')) {
                     jQuery(this).attr('inert', '');
                 }
             });
 
-            // Refresh CodeMirror instances if this is the editor modal
-            if (type === 'editor' && TCLBuilder.Core.editors.html?.codemirror && TCLBuilder.Core.editors.css?.codemirror) {
-                // Clear editor content
+            if (type === 'editor' && 
+                TCLBuilder.Core.editors.html?.codemirror && 
+                TCLBuilder.Core.editors.css?.codemirror && 
+                TCLBuilder.Core.editors.js?.codemirror) {
                 TCLBuilder.Core.editors.html.codemirror.setValue('');
                 TCLBuilder.Core.editors.css.codemirror.setValue('');
+                TCLBuilder.Core.editors.js.codemirror.setValue('');
                 
-                // Refresh editors
                 setTimeout(() => {
                     TCLBuilder.Core.editors.html.codemirror.refresh();
                     TCLBuilder.Core.editors.css.codemirror.refresh();
+                    TCLBuilder.Core.editors.js.codemirror.refresh();
                 }, 100);
             }
 
@@ -62,7 +60,6 @@
             TCLBuilder.Core.activeModal = type;
             jQuery('body').css('overflow', 'hidden');
 
-            // Focus first focusable element
             setTimeout(() => {
                 const firstFocusable = modal.find('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])').first();
                 if (firstFocusable.length) {
@@ -70,9 +67,9 @@
                 }
             }, 100);
 
-            // Publish modal opened event
             TCLBuilder.Events.publish('modal:opened', { type, sectionId });
         },
+
 
         close(type) {
             if (!type) return;
@@ -106,58 +103,58 @@
             modal.find('.title-input').val(section.title || '');
 
             if (type === 'editor') {
-                // For HTML sections, ensure we have the correct content structure
                 let htmlContent = '';
                 let cssContent = '';
+                let jsContent = '';
 
                 if (section.content) {
                     if (typeof section.content === 'object') {
                         htmlContent = section.content.html || '';
                         cssContent = section.content.css || '';
+                        jsContent = section.content.js || '';
                     } else if (typeof section.content === 'string') {
-                        // Handle case where content might be stored as string
                         try {
                             const parsed = JSON.parse(section.content);
                             htmlContent = parsed.html || '';
                             cssContent = parsed.css || '';
+                            jsContent = parsed.js || '';
                         } catch (e) {
                             htmlContent = section.content;
                         }
                     }
                 }
 
-                if (TCLBuilder.Core.editors.html?.codemirror && TCLBuilder.Core.editors.css?.codemirror) {
+                if (TCLBuilder.Core.editors.html?.codemirror && 
+                    TCLBuilder.Core.editors.css?.codemirror && 
+                    TCLBuilder.Core.editors.js?.codemirror) {
                     TCLBuilder.Core.editors.html.codemirror.setValue(htmlContent);
                     TCLBuilder.Core.editors.css.codemirror.setValue(cssContent);
+                    TCLBuilder.Core.editors.js.codemirror.setValue(jsContent);
                     
-                // Refresh editors
-                setTimeout(() => {
-                    TCLBuilder.Core.editors.html.codemirror.refresh();
-                    TCLBuilder.Core.editors.css.codemirror.refresh();
-                    
-                    // Just mark clean without height adjustment
-                    TCLBuilder.Core.editors.html.codemirror.getDoc().markClean();
-                    TCLBuilder.Core.editors.css.codemirror.getDoc().markClean();
+                    setTimeout(() => {
+                        TCLBuilder.Core.editors.html.codemirror.refresh();
+                        TCLBuilder.Core.editors.css.codemirror.refresh();
+                        TCLBuilder.Core.editors.js.codemirror.refresh();
+                        
+                        TCLBuilder.Core.editors.html.codemirror.getDoc().markClean();
+                        TCLBuilder.Core.editors.css.codemirror.getDoc().markClean();
+                        TCLBuilder.Core.editors.js.codemirror.getDoc().markClean();
 
-                    // Set editor size to auto
-                    TCLBuilder.Core.editors.html.codemirror.setSize(null, 'auto');
-                    TCLBuilder.Core.editors.css.codemirror.setSize(null, 'auto');
-                }, 100);
+                        TCLBuilder.Core.editors.html.codemirror.setSize(null, 'auto');
+                        TCLBuilder.Core.editors.css.codemirror.setSize(null, 'auto');
+                        TCLBuilder.Core.editors.js.codemirror.setSize(null, 'auto');
+                    }, 100);
                 }
             } else if (type === 'shortcode') {
-                // For shortcode sections, ensure we have a string
                 let shortcodeContent = '';
-
                 if (section.content) {
                     shortcodeContent = typeof section.content === 'string'
                         ? section.content
                         : (typeof section.content === 'object' ? JSON.stringify(section.content) : '');
                 }
-
                 modal.find('.shortcode-input').val(shortcodeContent);
             }
 
-            // Trigger input events to ensure any listeners are notified
             modal.find('input, textarea').trigger('input');
         },
 
@@ -176,30 +173,39 @@
                 let validationErrors = [];
 
                 if (type === 'editor') {
-                    if (!TCLBuilder.Core.editors.html?.codemirror || !TCLBuilder.Core.editors.css?.codemirror) {
+                    if (!TCLBuilder.Core.editors.html?.codemirror || 
+                        !TCLBuilder.Core.editors.css?.codemirror || 
+                        !TCLBuilder.Core.editors.js?.codemirror) {
                         throw new Error('Code editors not initialized');
                     }
 
                     const htmlContent = TCLBuilder.Core.editors.html.codemirror.getValue();
                     const cssContent = TCLBuilder.Core.editors.css.codemirror.getValue();
+                    const jsContent = TCLBuilder.Core.editors.js.codemirror.getValue();
 
-                    // Basic content validation
                     content = {
                         html: htmlContent.trim(),
-                        css: cssContent.trim()
+                        css: cssContent.trim(),
+                        js: jsContent.trim()
                     };
 
-                    // Only validate non-empty content
                     if (content.html && !TCLBuilder.Utils.validateHTML(content.html)) {
                         validationErrors.push('Invalid HTML structure. Basic HTML structure validation failed.');
                     }
 
                     if (content.css) {
-                        // Only check for matching braces in CSS
                         const openBraces = (content.css.match(/{/g) || []).length;
                         const closeBraces = (content.css.match(/}/g) || []).length;
                         if (openBraces !== closeBraces) {
                             validationErrors.push('CSS has mismatched braces. Please check your CSS syntax.');
+                        }
+                    }
+
+                    if (content.js) {
+                        try {
+                            new Function(content.js);
+                        } catch (e) {
+                            validationErrors.push('JavaScript syntax error: ' + e.message);
                         }
                     }
                 } else {

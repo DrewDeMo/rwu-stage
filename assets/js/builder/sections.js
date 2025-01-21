@@ -56,7 +56,8 @@
                             designation: section.designation || 'library',
                             content: section.type === 'html' ? {
                                 html: typeof section.content?.html === 'string' ? section.content.html : '',
-                                css: typeof section.content?.css === 'string' ? section.content.css : ''
+                                css: typeof section.content?.css === 'string' ? section.content.css : '',
+                                js: typeof section.content?.js === 'string' ? section.content.js : ''
                             } : (typeof section.content === 'string' ? section.content : '')
                         };
 
@@ -126,9 +127,10 @@
                         return 'Invalid content format';
                     }
 
-                    // Analyze HTML content
+                    // Analyze content
                     const htmlStats = this.analyzeHTML(content.html || '');
                     const cssStats = this.analyzeCSS(content.css || '');
+                    const jsStats = this.analyzeJS(content.js || '');
 
                     return `
                         <div class="preview-summary">
@@ -142,6 +144,13 @@
                                 <i data-lucide="palette"></i>
                                 <span>${cssStats.ruleCount}</span>
                                 ${cssStats.keyProperties ? `<span class="key-items">${cssStats.keyProperties}</span>` : ''}
+                            </div>
+                            ` : ''}
+                            ${jsStats.functionCount ? `
+                            <div class="preview-stat js-stat">
+                                <i data-lucide="file-code"></i>
+                                <span>${jsStats.functionCount}</span>
+                                ${jsStats.keyFeatures ? `<span class="key-items">${jsStats.keyFeatures}</span>` : ''}
                             </div>
                             ` : ''}
                         </div>
@@ -213,6 +222,33 @@
             } catch (error) {
                 console.error('TCLBuilder: Error analyzing CSS:', error);
                 return { ruleCount: 0, keyProperties: '' };
+            }
+        },
+
+        analyzeJS(js) {
+            try {
+                if (!js) return { functionCount: 0, keyFeatures: '' };
+
+                // Count function declarations and expressions
+                const functionCount = (js.match(/function\s+\w+\s*\(|\(\s*\)\s*=>|\w+\s*:\s*function/g) || []).length;
+
+                // Detect key features
+                const features = new Set();
+                if (js.includes('addEventListener')) features.add('events');
+                if (js.includes('querySelector')) features.add('DOM');
+                if (js.includes('fetch(')) features.add('ajax');
+                if (js.includes('jQuery') || js.includes('$')) features.add('jQuery');
+                if (js.includes('new Promise')) features.add('async');
+
+                const keyFeatures = Array.from(features).slice(0, 2).join(', ');
+
+                return {
+                    functionCount,
+                    keyFeatures
+                };
+            } catch (error) {
+                console.error('TCLBuilder: Error analyzing JavaScript:', error);
+                return { functionCount: 0, keyFeatures: '' };
             }
         },
 

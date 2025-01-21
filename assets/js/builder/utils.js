@@ -81,10 +81,11 @@
             // Ensure content structure exists
             if (data.type === 'html') {
                 if (!data.content || typeof data.content !== 'object') {
-                    data.content = { html: '', css: '' };
+                    data.content = { html: '', css: '', js: '' };
                 }
                 if (!data.content.html) data.content.html = '';
                 if (!data.content.css) data.content.css = '';
+                if (!data.content.js) data.content.js = '';
             } else if (data.type === 'shortcode') {
                 if (typeof data.content !== 'string') {
                     data.content = '';

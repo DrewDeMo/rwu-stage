@@ -20,7 +20,8 @@
         draggedSection: null,
         editors: {
             html: null,
-            css: null
+            css: null,
+            js: null
         },
         
         init() {
@@ -34,6 +35,7 @@
                 TCLBuilder.Modal.init();
                 TCLBuilder.DragDrop.init();
                 TCLBuilder.WordPress.init();
+                TCLBuilder.Tabs.init();
 
                 // Publish initialization event
                 TCLBuilder.Events.publish('core:initialized');
