@@ -105,6 +105,45 @@
                 clearTimeout(timeout);
                 timeout = setTimeout(later, wait);
             };
+        },
+
+        validateImport(importData) {
+            try {
+                // Check basic structure
+                if (!importData || typeof importData !== 'object') {
+                    throw new Error('Invalid import data format');
+                }
+
+                // Validate required fields
+                if (!importData.version || !importData.sections || !Array.isArray(importData.sections)) {
+                    throw new Error('Missing required import fields');
+                }
+
+                // Validate each section
+                importData.sections.forEach((section, index) => {
+                    if (!section.type || !section.content) {
+                        throw new Error(`Invalid section data at index ${index}`);
+                    }
+
+                    if (section.type === 'html') {
+                        if (typeof section.content !== 'object' || 
+                            typeof section.content.html !== 'string' || 
+                            typeof section.content.css !== 'string' || 
+                            typeof section.content.js !== 'string') {
+                            throw new Error(`Invalid HTML section content at index ${index}`);
+                        }
+                    } else if (section.type === 'shortcode') {
+                        if (typeof section.content !== 'string') {
+                            throw new Error(`Invalid shortcode content at index ${index}`);
+                        }
+                    }
+                });
+
+                return true;
+            } catch (error) {
+                console.error('Import validation error:', error);
+                return false;
+            }
         }
     });
 

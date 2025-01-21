@@ -576,61 +576,62 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            if (!confirm('Are you sure you want to import these sections? This will replace any existing sections.')) {
-                e.target.value = '';
-                return;
-            }
-
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
-                    const sections = JSON.parse(e.target.result);
-                    this.importSections(sections);
+                    const importData = JSON.parse(e.target.result);
+                    this.importSections(importData);
                 } catch (error) {
                     TCLBuilder.Events.publish('notification:error', {
-                        message: 'Invalid sections file'
+                        message: 'Invalid import file format'
                     });
                 }
-                e.target.value = '';
             };
             reader.readAsText(file);
+            e.target.value = ''; // Reset file input
         },
 
-        importSections(sections) {
-            const postId = jQuery('#post_ID').val();
 
-            jQuery.ajax({
-                url: tclBuilderData.ajaxUrl,
-                type: 'POST',
-                data: {
-                    action: 'tcl_builder_import_sections',
-                    nonce: tclBuilderData.nonce,
-                    post_id: postId,
-                    sections: JSON.stringify(sections)
-                },
-                success: (response) => {
-                    if (!response.success) {
-                        TCLBuilder.Events.publish('notification:error', {
-                            message: response.data.message || 'Import failed'
-                        });
-                        return;
-                    }
+        importSections(importData) {
+            try {
+                // Validate import data using the new utility
+                if (!TCLBuilder.Utils.validateImport(importData)) {
+                    throw new Error('Invalid import data');
+                }
 
-                    // Update sections and refresh builder
-                    TCLBuilder.Core.sections = response.data.sections;
-                    this.renderSections();
+                // Process each imported section
+                const processedSections = importData.sections.map(section => ({
+                    id: Date.now() + Math.floor(Math.random() * 1000),
+                    type: section.type,
+                    title: section.title || 'Imported Section',
+                    designation: section.designation || 'library',
+                    content: section.content
+                }));
 
+                // Update sections array
+                TCLBuilder.Core.sections = processedSections;
+                
+                // Render and save
+                this.renderSections();
+                TCLBuilder.WordPress.save().then(() => {
                     TCLBuilder.Events.publish('notification:success', {
                         message: 'Sections imported successfully'
                     });
-                },
-                error: () => {
+                }).catch(error => {
+                    console.error('Save error:', error);
                     TCLBuilder.Events.publish('notification:error', {
-                        message: 'Failed to import sections'
+                        message: 'Failed to save imported sections'
                     });
-                }
-            });
+                });
+
+            } catch (error) {
+                console.error('Import error:', error);
+                TCLBuilder.Events.publish('notification:error', {
+                    message: 'Failed to import sections: ' + error.message
+                });
+            }
         },
+
 
         bindEvents() {
             // Add hidden file input for imports
