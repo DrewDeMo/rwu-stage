@@ -99,6 +99,11 @@
     user-select: none;
 }
 
+/* Store Section Header */
+.section-container[data-designation="store"] .section-header {
+    color: var(--orange-primary);
+}
+
 /* Drag Handle */
 .drag-handle {
     padding: 0.5rem;

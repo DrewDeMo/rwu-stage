@@ -46,7 +46,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1.25rem;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -55,10 +55,11 @@
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--text-primary);
+    gap: 0.5rem;
 }
 
 .modal-close {
-    padding: 0.5rem;
+    padding: 0.375rem;
     border: none;
     background: transparent;
     color: var(--text-secondary);
@@ -68,8 +69,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
 }
 
 .modal-close:hover {
@@ -131,16 +132,16 @@
 }
 
 .modal-shortcode .modal-content {
-    padding: 0;
+    padding: 1.25rem;
     height: auto;
 }
 
 .modal-shortcode .modal-header {
-    padding: 0.75rem 1rem;
+    padding: 0.875rem 1rem;
 }
 
 .modal-shortcode .modal-footer {
-    padding: 0.75rem 1rem;
+    padding: 0.875rem 1rem;
     margin-top: 0;
 }
 
@@ -159,16 +160,64 @@
 
 /* Footer Styles */
 .modal-footer {
-    position: sticky;
-    bottom: 0;
-    padding: 1rem 1.5rem;
-    background: var(--bg-light);
-    border-top: 1px solid var(--border-color);
-    border-radius: 0 0 var(--border-radius) var(--border-radius);
     display: flex;
+    align-items: center;
     justify-content: flex-end;
-    gap: 1rem;
-    z-index: 1;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg-lighter);
+    border-top: 1px solid var(--border-color);
+    border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+    position: relative;
+}
+
+.modal-shortcode .modal-footer {
+    padding: 1rem 1.25rem;
+    margin-top: 0;
+}
+
+/* Update button styles */
+.modal button:not(.modal-close) {
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--border-radius-sm);
+    font-weight: 500;
+    transition: var(--transition-smooth);
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    gap: 0.375rem;
+}
+
+.modal button.primary {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.modal button.primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.modal button.secondary {
+    background: var(--bg-white);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.modal button.secondary:hover {
+    background: var(--bg-light);
+    border-color: var(--border-hover);
+}
+
+@media screen and (max-width: 782px) {
+    .modal-footer {
+        padding: 1rem 1.25rem;
+    }
 }
 
 /* Editor modal specific overrides */
@@ -244,8 +293,9 @@
         padding: 1rem;
     }
 
+    .modal-header,
     .modal-footer {
-        padding: 1rem;
+        padding: 0.875rem 1rem;
     }
 }
 

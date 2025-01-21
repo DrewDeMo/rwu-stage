@@ -1,12 +1,12 @@
 :root {
     /* Colors */
-    --orange-primary: #ff6b35;
-    --orange-primary-dark: #e55a2b;
-    --orange-hover: #ff8659;
+    --orange-primary: #cc5500;
+    --orange-primary-dark: #b34a00;
+    --orange-hover: #e66000;
     
-    --blue-primary: #0066ff;
-    --blue-primary-dark: #0052cc;
-    --blue-hover: #1a75ff;
+    --blue-primary: #cc5500;
+    --blue-primary-dark: #b34a00;
+    --blue-hover: #e66000;
     
     --grey-primary: #6b7280;
     --grey-primary-dark: #4b5563;
@@ -42,14 +42,14 @@
     --hover-bg: rgba(0, 0, 0, 0.04);
     --input-bg: #f8f9fa;
     --icon-color: #6b7280;
-    --primary-color: var(--blue-primary);
+    --primary-color: var(--orange-primary);
     --text-color: var(--text-primary);
     
     /* Shadows */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
     --shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
-    --shadow-focus: 0 0 0 3px rgba(0, 102, 255, 0.1);
+    --shadow-focus: 0 0 0 3px rgba(204, 85, 0, 0.1);
     
     /* Border Radius */
     --border-radius-sm: 8px;

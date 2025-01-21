@@ -2,17 +2,17 @@
  * TCL Builder Section Designations
  */
 
-/* Store Sections (Blue) */
+/* Store Sections (Orange) */
 .section-container[data-designation="store"] .section-header {
-    background: linear-gradient(135deg, var(--blue-primary), var(--blue-primary-dark));
+    background: linear-gradient(135deg, var(--orange-primary), var(--orange-primary-dark));
 }
 
 .section-container[data-designation="store"] .section-header .action-btn:hover {
-    background-color: var(--blue-hover);
+    background-color: var(--orange-hover);
 }
 
 .section-container[data-designation="store"].ui-sortable-placeholder {
-    border-color: var(--blue-primary);
+    border-color: var(--orange-primary);
 }
 
 /* Library Sections (Orange - Default) */
@@ -101,7 +101,7 @@
 
 /* Icon Colors */
 [data-designation="store"] .designation-selector i[data-lucide] {
-    color: var(--blue-hover) !important;
+    color: var(--orange-hover) !important;
 }
 
 [data-designation="library"] .designation-selector i[data-lucide],
