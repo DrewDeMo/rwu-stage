@@ -5,14 +5,15 @@
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: rgba(0, 0, 0, 0.75);
+	background: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(4px);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	z-index: 999999;
 	opacity: 0;
 	visibility: hidden;
-	transition: all 0.2s ease-in-out;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-overlay.active {
@@ -22,16 +23,17 @@
 
 .modal {
 	background: var(--bg-white);
-	border-radius: var(--border-radius);
-	box-shadow: var(--shadow-lg);
+	border-radius: 12px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 	width: 90%;
 	max-width: 500px;
-	transform: scale(0.95);
-	transition: transform 0.2s ease-in-out;
+	transform: translateY(20px) scale(0.95);
+	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .modal-overlay.active .modal {
-	transform: scale(1);
+	transform: translateY(0) scale(1);
 }
 
 /* Modal Header */
@@ -39,8 +41,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 1rem 1.5rem;
-	border-bottom: 1px solid var(--border-color);
+	padding: 1.25rem 1.5rem;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .modal-title {
@@ -50,6 +52,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.75rem;
+	color: var(--text-primary);
 }
 
 .modal-close {
@@ -58,18 +61,23 @@
 	background: none;
 	cursor: pointer;
 	color: var(--text-secondary);
-	border-radius: var(--border-radius-sm);
-	transition: var(--transition);
+	border-radius: 8px;
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
 }
 
 .modal-close:hover {
-	background: var(--bg-light);
+	background: rgba(0, 0, 0, 0.05);
 	color: var(--text-primary);
 }
 
 /* Modal Content */
 .modal-content {
-	padding: 1.5rem;
+	padding: 1.75rem;
 	max-height: calc(90vh - 120px);
 	overflow-y: auto;
 }
@@ -85,8 +93,35 @@
 
 .modal-lg .modal-content {
 	flex: 1;
-	padding: 1.5rem;
+	padding: 1.75rem;
 	overflow-y: auto;
+}
+
+/* Button Styles */
+.modal button:not(.modal-close) {
+	padding: 0.75rem 1.25rem;
+	border-radius: 8px;
+	font-weight: 500;
+	transition: all 0.2s ease;
+	border: 1px solid transparent;
+}
+
+.modal button.primary {
+	background: var(--primary-color, #0066ff);
+	color: white;
+}
+
+.modal button.primary:hover {
+	background: var(--primary-dark, #0052cc);
+}
+
+.modal button.secondary {
+	background: rgba(0, 0, 0, 0.05);
+	color: var(--text-primary);
+}
+
+.modal button.secondary:hover {
+	background: rgba(0, 0, 0, 0.08);
 }
 
 /* Responsive */
@@ -97,6 +132,6 @@
 	}
 
 	.modal-content {
-		padding: 1rem;
+		padding: 1.25rem;
 	}
 }

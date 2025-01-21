@@ -1,6 +1,6 @@
 /* Buttons */
 .add-section-btn {
-    font-family: 'Satoshi', sans-serif;
+    font-family: var(--font-sans);
     appearance: none;
     border: 0;
     margin: 0;
@@ -8,64 +8,69 @@
 }
 
 .add-section-btn:focus-visible {
-    outline: 2px solid var(--orange-primary);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: var(--shadow-focus);
 }
 
 .add-section-btn.primary {
     background-color: var(--bg-white);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1.25rem;
     border-radius: var(--border-radius-sm);
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    transition: var(--transition);
+    gap: 0.625rem;
+    transition: var(--transition-smooth);
     font-weight: 500;
     font-size: 0.875rem;
+    box-shadow: var(--shadow-sm);
 }
 
 .add-section-btn.primary:hover {
     border-color: var(--border-hover);
-    background-color: var(--bg-light);
+    background-color: var(--bg-lighter);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
 }
 
 .add-section-btn.primary i {
-    width: 18px;
-    height: 18px;
-    stroke-width: 2;
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.75;
 }
 
 .add-section-btn.dashed {
     width: 100%;
-    margin-top: 1.5rem;
-    padding: 1.25rem;
+    margin-top: 1.75rem;
+    padding: 1.5rem;
     background: var(--bg-white);
     border: 2px dashed var(--border-color);
     border-radius: var(--border-radius);
-    transition: var(--transition);
-    opacity: 0.8;
+    transition: var(--transition-smooth);
+    opacity: 0.85;
 }
 
 .add-section-btn.dashed:hover {
     opacity: 1;
-    border-color: var(--orange-primary);
-    background-color: var(--orange-subtle);
+    border-color: var(--blue-primary);
+    background-color: var(--bg-lighter);
+    transform: translateY(-1px);
 }
 
 .button-content {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.625rem;
     color: var(--text-secondary);
+    font-weight: 500;
 }
 
 .button-content i {
     width: 20px;
     height: 20px;
-    stroke-width: 1.5;
+    stroke-width: 1.75;
 }
 
 .btn {
@@ -73,53 +78,68 @@
     border-radius: var(--border-radius-sm);
     font-weight: 500;
     cursor: pointer;
-    transition: var(--transition);
+    transition: var(--transition-smooth);
+    font-size: 0.875rem;
 }
 
 .primary-btn {
-    background: var(--orange-primary);
+    background: var(--blue-primary);
     color: white;
     border: none;
+    box-shadow: var(--shadow-sm);
 }
 
 .primary-btn:hover {
-    background: var(--orange-hover);
+    background: var(--blue-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
 }
 
 .secondary-btn {
     background: var(--bg-white);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .secondary-btn:hover {
-    background: var(--bg-light);
+    background: var(--bg-lighter);
     border-color: var(--border-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
 }
 
 /* WordPress Button Compatibility */
 .wp-core-ui .button-primary {
-    background: var(--orange-primary);
-    border-color: var(--orange-primary);
+    background: var(--blue-primary);
+    border-color: var(--blue-primary);
     color: white;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-smooth);
 }
 
 .wp-core-ui .button-primary:hover,
 .wp-core-ui .button-primary:focus {
-    background: var(--orange-hover);
-    border-color: var(--orange-hover);
+    background: var(--blue-hover);
+    border-color: var(--blue-hover);
     color: white;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
 }
 
 .wp-core-ui .button-secondary {
     background: var(--bg-white);
     border-color: var(--border-color);
     color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-smooth);
 }
 
 .wp-core-ui .button-secondary:hover,
 .wp-core-ui .button-secondary:focus {
-    background: var(--bg-light);
+    background: var(--bg-lighter);
     border-color: var(--border-hover);
     color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
 }
