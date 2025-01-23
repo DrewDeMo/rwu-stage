@@ -719,6 +719,9 @@ class TCL_Builder {
             $html = isset($section['content']['html']) ? $section['content']['html'] : '';
             $js = isset($section['content']['js']) ? $section['content']['js'] : '';
 
+            // Determine if section needs shadow DOM isolation
+            $needs_shadow = !empty($css) || !empty($js) || strpos($html, 'class=') !== false || strpos($html, 'id=') !== false;
+
             // Add default styles and scoping
             $css = ":host { display: block; margin: 0; padding: 0; box-sizing: border-box; } :host > div { margin: 0; padding: 0; box-sizing: inherit; }\n" . $css;
             
@@ -750,11 +753,12 @@ class TCL_Builder {
                 $html
             );
 
-            // Create the host element first
+            // Create the host element with shadow context attribute if needed
             echo '<div id="' . esc_attr($section_id) . '" class="tcl-builder-section-host" 
                   data-section-id="' . esc_attr($section['id']) . '" 
                   data-section-type="' . esc_attr($section['type']) . '"
-                  data-section-designation="' . esc_attr($section['designation'] ?? 'library') . '"></div>';
+                  data-section-designation="' . esc_attr($section['designation'] ?? 'library') . '"' .
+                  ($needs_shadow ? ' data-shadow-context="true"' : '') . '></div>';
 
             // Create a template for the Shadow DOM content
             echo '<template id="' . esc_attr($section_id) . '-template">';

@@ -222,10 +222,14 @@
 
 		initializeSectionJS(shadowRoot, js, sectionId) {
             if (!shadowRoot || !shadowRoot.querySelector('.section-content')) {
-                throw new Error('Invalid shadow root or content not ready');
+                console.warn('[ShadowDOM] Invalid shadow root or content not ready');
+                return;
             }
 
-            // Create enhanced wrapper function for shadow DOM context
+            // Only apply shadow DOM context if explicitly enabled
+            const useShadowContext = shadowRoot.host.hasAttribute('data-shadow-context');
+            
+            // Create enhanced wrapper function with appropriate context
             const wrappedJs = `
                 (function(shadowRoot) {
                     'use strict';
@@ -235,17 +239,17 @@
                     const $$ = selector => shadowRoot.querySelectorAll(selector);
                     
                     // Safe window access
-                    const window = {
+                    const window = ${useShadowContext ? `{
                         setTimeout,
                         setInterval,
                         clearTimeout,
                         clearInterval,
                         requestAnimationFrame,
                         cancelAnimationFrame
-                    };
+                    }` : 'window'};
                     
                     // Safe document replacement
-                    const document = {
+                    const document = ${useShadowContext ? `{
                         createElement: (tag) => {
                             const el = shadowRoot.ownerDocument.createElement(tag);
                             shadowRoot.appendChild(el);
@@ -253,22 +257,27 @@
                         },
                         querySelector: selector => shadowRoot.querySelector(selector),
                         querySelectorAll: selector => shadowRoot.querySelectorAll(selector),
-                        getElementById: id => shadowRoot.querySelector('#' + id),
+                        getElementById: id => shadowRoot.querySelector('#' + CSS.escape(id)),
                         getElementsByClassName: className => shadowRoot.querySelectorAll('.' + className),
                         addEventListener: (type, fn, options) => {
+                            const element = shadowRoot.querySelector(type.startsWith('#') ? type : '.section-content');
+                            if (!element) {
+                                console.warn('[ShadowDOM] Target element not found for event listener');
+                                return;
+                            }
                             const wrappedFn = (e) => {
                                 e.stopPropagation();
-                                fn.call(shadowRoot, e);
+                                fn.call(element, e);
                             };
-                            shadowRoot.addEventListener(type, wrappedFn, options);
-                            TCLBuilderFrontend.trackEventListener('${sectionId}', shadowRoot, type, wrappedFn);
+                            element.addEventListener(type, wrappedFn, options);
+                            TCLBuilderFrontend.trackEventListener('${sectionId}', element, type, wrappedFn);
                         }
-                    };
+                    }` : 'document'};
 
                     try {
                         ${js}
                     } catch (error) {
-                        console.error('[Section ${sectionId}] JS execution error:', error);
+                        console.error('[ShadowDOM] Section ${sectionId} JS execution error:', error);
                     }
                 })(this);`;
 
@@ -278,7 +287,7 @@
                     const fn = new Function('root', wrappedJs);
                     fn.call(shadowRoot, shadowRoot);
                 } catch (error) {
-                    console.error(`[Section ${sectionId}] JS execution error:`, error);
+                    console.error(`[ShadowDOM] Section ${sectionId} JS execution error:`, error);
                 }
             });
         },
