@@ -389,6 +389,23 @@ class TCL_Builder {
     public function enqueue_frontend_assets() {
         wp_enqueue_style('tcl-builder-frontend', TCL_BUILDER_URI . '/assets/css/frontend.css', array(), TCL_BUILDER_VERSION);
         wp_enqueue_style('tcl-builder-shared-sections', TCL_BUILDER_URI . '/assets/css/shared-sections.css', array(), TCL_BUILDER_VERSION);
+        
+        // Enqueue frontend script
+        wp_enqueue_script('tcl-builder-frontend', TCL_BUILDER_URI . '/assets/js/frontend.js', array('jquery'), TCL_BUILDER_VERSION, true);
+        
+        // Localize section data for frontend
+        if (is_singular()) {
+            $post_id = get_the_ID();
+            $sections = TCL_Builder_Meta::get_sections($post_id);
+            
+            // Create sections data object
+            $sections_data = array();
+            foreach ($sections as $section) {
+                $sections_data[$section['id']] = $section;
+            }
+            
+            wp_localize_script('tcl-builder-frontend', 'tclBuilderSections', $sections_data);
+        }
     }
 
     /**
@@ -755,43 +772,135 @@ class TCL_Builder {
             echo '</div></template>';
 
             // Create the host element
-            echo '<div id="' . esc_attr($section_id) . '" class="tcl-builder-section-host" style="display: block; margin: 0; padding: 0;"></div>';
+            echo '<div id="' . esc_attr($section_id) . '" class="tcl-builder-section-host"></div>';
 
             // Initialize Shadow DOM and execute JavaScript
             echo '<script>
-                (function() {
-                    const host = document.getElementById("' . esc_js($section_id) . '");
-                    const template = document.getElementById("' . esc_js($section_id) . '-template");
-                    const shadowRoot = host.attachShadow({mode: "open"});
-                    shadowRoot.appendChild(template.content.cloneNode(true));
+(function() {
+    const host = document.getElementById("' . esc_js($section_id) . '");
+    const template = document.getElementById("' . esc_js($section_id) . '-template");
+    const shadowRoot = host.attachShadow({mode: "open"});
+    shadowRoot.appendChild(template.content.cloneNode(true));
 
-                    // Initialize Lucide icons within shadow DOM
-                    if (window.lucide) {
-                        window.lucide.createIcons(shadowRoot);
-                    }
+    // Create a safe proxy for element access
+    const createSafeElement = () => {
+        return new Proxy({}, {
+            get: (target, prop) => {
+                if (prop === "style") return new Proxy({}, { set: () => true, get: () => "" });
+                if (prop === "classList") return { add: () => {}, remove: () => {}, toggle: () => false };
+                if (typeof prop === "string") return () => {};
+                return null;
+            }
+        });
+    };
 
-                    // Execute section JavaScript within shadow DOM context
-                    const sectionJS = `' . str_replace('`', '\\`', $js) . '`;
-                    if (sectionJS) {
-                        try {
-                            const scriptEl = document.createElement("script");
-                            scriptEl.id = "' . esc_js($section_id) . '-script";
-                            scriptEl.textContent = `
-                                (function(root, $) {
-                                    try {
-                                        ${sectionJS}
-                                    } catch (error) {
-                                        console.error("Error in section script:", error);
-                                    }
-                                })(document.getElementById("' . esc_js($section_id) . '").shadowRoot, window.jQuery);
-                            `;
-                            shadowRoot.appendChild(scriptEl);
-                        } catch (error) {
-                            console.error("Error executing section JavaScript:", error);
-                        }
-                    }
-                })();
-            </script>';
+    // Enhanced element access functions
+    const createElementAccessors = (root) => {
+        const $ = selector => {
+            try {
+                const el = root.querySelector(selector);
+                return el || createSafeElement();
+            } catch (error) {
+                console.warn(`Error accessing element ${selector}:`, error);
+                return createSafeElement();
+            }
+        };
+
+        const $$ = selector => {
+            try {
+                return Array.from(root.querySelectorAll(selector) || []);
+            } catch (error) {
+                console.warn(`Error accessing elements ${selector}:`, error);
+                return [];
+            }
+        };
+
+        return { $, $$ };
+    };
+
+    // Wait for DOM content
+    const waitForDOM = () => new Promise(resolve => {
+        const check = () => {
+            const content = shadowRoot.querySelector(".section-content");
+            if (content) {
+                resolve();
+                return true;
+            }
+            return false;
+        };
+
+        if (!check()) {
+            const observer = new MutationObserver(() => {
+                if (check()) observer.disconnect();
+            });
+            observer.observe(shadowRoot, { childList: true, subtree: true });
+            setTimeout(() => observer.disconnect(), 5000);
+        }
+    });
+
+    // Initialize section
+    waitForDOM().then(() => {
+        const { $, $$ } = createElementAccessors(shadowRoot);
+        let jQuery = window.jQuery ? selector => window.jQuery(shadowRoot).find(selector) : null;
+        if (jQuery) jQuery.fn = window.jQuery.fn;
+
+        // Initialize Lucide icons if available
+        if (window.lucide) {
+            try {
+                window.lucide.createIcons(shadowRoot);
+            } catch (error) {
+                console.warn("Lucide icons failed to load:", error);
+            }
+        }
+
+        // Transform and execute section JavaScript
+        try {';
+            
+            // Transform JavaScript on PHP side
+            $transformedJs = preg_replace(
+                array(
+                    '/document\.getElementById\([\'"](.+?)[\'"]\)/',
+                    '/document\.querySelector\([\'"](.+?)[\'"]\)/',
+                    '/document\.getElementsByClassName\([\'"](.+?)[\'"]\)/',
+                    '/document\.getElementsByTagName\([\'"](.+?)[\'"]\)/',
+                    '/document\.querySelectorAll\([\'"](.+?)[\'"]\)/',
+                    '/document\.createElement\([\'"](.+?)[\'"]\)/'
+                ),
+                array(
+                    '$(\'#$1\')',
+                    '$(\'$1\')',
+                    '$$(\'.\'$1\')',
+                    '$$(\'"$1\')',
+                    '$$(\'"$1\')',
+                    'root.ownerDocument.createElement(\'$1\')'
+                ),
+                $js
+            );
+
+            // Escape JavaScript
+            $transformedJs = str_replace(
+                array('\\', '"', "\n", "\r", "\t"), 
+                array('\\\\', '\\"', "\\n", "", "\\t"), 
+                $transformedJs
+            );
+
+            echo '
+            const sectionJS = "' . $transformedJs . '";
+            const fn = new Function("$", "$$", "jQuery", "root", sectionJS);
+            fn.call(shadowRoot, $, $$, jQuery, shadowRoot);
+        } catch (error) {
+            console.error("[Section JavaScript Error]:", error);
+        }
+    }).catch(error => {
+        console.error("Error initializing section:", error);
+    });
+})();
+</script>';
+
+
+
+
+
             
         } catch (Exception $e) {
             $this->logger->log('Section render failed', 'error', array(

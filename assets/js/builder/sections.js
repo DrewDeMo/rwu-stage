@@ -525,6 +525,9 @@
             }
         },
 
+
+
+
         handleExport(e) {
             e.preventDefault();
             const section = jQuery(e.currentTarget).closest('.section-container');

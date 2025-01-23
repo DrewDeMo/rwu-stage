@@ -107,6 +107,52 @@
             };
         },
 
+        validateJS(js) {
+            if (typeof js !== 'string') return true; // Allow empty content
+            if (!js.trim()) return true; // Allow empty string
+            
+            try {
+                // Check for basic syntax errors
+                new Function(js);
+
+                // Extract element selectors
+                const selectorRegex = /(?:querySelector|getElementById|getElementsByClassName|getElementsByTagName)\(['"](.*?)['"]\)/g;
+                const matches = [...js.matchAll(selectorRegex)];
+                
+                // Log found selectors for debugging
+                if (matches.length > 0) {
+                    console.log('Found element selectors:', matches.map(m => m[1]));
+                }
+
+                return true;
+            } catch (error) {
+                console.error('TCLBuilder: JavaScript validation error:', error);
+                return false;
+            }
+        },
+
+        extractSelectors(js) {
+            if (typeof js !== 'string' || !js.trim()) return [];
+            
+            const selectorRegex = /(?:querySelector|getElementById|getElementsByClassName|getElementsByTagName)\(['"](.*?)['"]\)/g;
+            const matches = [...js.matchAll(selectorRegex)];
+            return matches.map(match => match[1]);
+        },
+
+        validateElementAvailability(root, selectors) {
+            if (!root || !selectors || !Array.isArray(selectors)) return false;
+            
+            return selectors.every(selector => {
+                const element = root.querySelector(selector);
+                if (!element) {
+                    console.warn(`TCLBuilder: Element not found: ${selector}`);
+                    return false;
+                }
+                return true;
+            });
+        },
+
+
         validateImport(importData) {
             try {
                 // Check basic structure
