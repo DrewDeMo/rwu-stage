@@ -719,63 +719,52 @@ class TCL_Builder {
             $html = isset($section['content']['html']) ? $section['content']['html'] : '';
             $js = isset($section['content']['js']) ? $section['content']['js'] : '';
 
-            // Determine if section needs shadow DOM isolation
-            $needs_shadow = !empty($css) || !empty($js) || strpos($html, 'class=') !== false || strpos($html, 'id=') !== false;
+            // Generate unique shadow root ID
+            $shadow_root_id = 'shadow-root-' . $section_id . '-' . uniqid();
 
-            // Add default styles and scoping
-            $css = ":host { display: block; margin: 0; padding: 0; box-sizing: border-box; } :host > div { margin: 0; padding: 0; box-sizing: inherit; }\n" . $css;
-            
-            // Process PHP template tags in the HTML content
-            $processed_html = preg_replace_callback(
-                '/\<\?php\s+echo\s+([^;]+);\s*\?\>/i',
-                function($matches) {
-                    $php_code = trim($matches[1]);
-                    $template_tags = array(
-                        'get_template_directory_uri()' => 'get_template_directory_uri',
-                        'get_stylesheet_directory_uri()' => 'get_stylesheet_directory_uri',
-                        'get_theme_file_uri()' => 'get_theme_file_uri',
-                        'bloginfo(\'url\')' => array('bloginfo', 'url'),
-                        'home_url()' => 'home_url'
-                    );
-                    
-                    if (isset($template_tags[$php_code])) {
-                        if (is_array($template_tags[$php_code])) {
-                            $func = $template_tags[$php_code][0];
-                            $param = $template_tags[$php_code][1];
-                            return esc_url($func($param));
-                        } else {
-                            $func = $template_tags[$php_code];
-                            return esc_url($func());
-                        }
-                    }
-                    return '';
-                },
-                $html
-            );
+            // Determine if section uses shadow DOM
+            $shadow_context = isset($section['shadow_context']) ? $section['shadow_context'] : false;
 
-            // Create the host element with shadow context attribute if needed
+            // Create the host element with shadow context attribute
             echo '<div id="' . esc_attr($section_id) . '" class="tcl-builder-section-host" 
                   data-section-id="' . esc_attr($section['id']) . '" 
                   data-section-type="' . esc_attr($section['type']) . '"
-                  data-section-designation="' . esc_attr($section['designation'] ?? 'library') . '"' .
-                  ($needs_shadow ? ' data-shadow-context="true"' : '') . '></div>';
+                  data-section-designation="' . esc_attr($section['designation'] ?? 'library') . '"
+                  data-shadow-context="' . ($shadow_context ? 'true' : 'false') . '"
+                  data-shadow-root-id="' . esc_attr($shadow_root_id) . '">';
 
-            // Create a template for the Shadow DOM content
+            if (!$shadow_context) {
+                // For non-shadow DOM sections, render content directly
+                if ($css) {
+                    echo '<style>' . $css . '</style>';
+                }
+                echo '<div class="section-content" data-section-id="' . esc_attr($section['id']) . '">';
+                echo do_shortcode($html);
+                echo '</div>';
+                if ($js) {
+                    echo '<script>' . $js . '</script>';
+                }
+                echo '</div>';
+                return;
+            }
+
+            // Shadow DOM template and initialization
+            echo '</div>'; // Close host element
             echo '<template id="' . esc_attr($section_id) . '-template">';
             
-            // Add required resources
+            // Add required resources for shadow DOM
             echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
             if (strpos($js, 'jQuery') !== false || strpos($js, '$') !== false) {
                 echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
             }
             
-            // Add wrapper div and custom CSS
-            echo '<style>' . $css . '</style>';
-            echo '<div class="section-content" data-section-id="' . esc_attr($section['id']) . '">';
+            if ($css) {
+                $css = ":host { display: block; margin: 0; padding: 0; box-sizing: border-box; } :host > div { margin: 0; padding: 0; box-sizing: inherit; }\n" . $css;
+                echo '<style>' . $css . '</style>';
+            }
             
-            // Process shortcodes in HTML content
-            $processed_html = do_shortcode($processed_html);
-            echo apply_filters('tcl_builder_section_html', $processed_html, $section, $post_id);
+            echo '<div class="section-content" data-section-id="' . esc_attr($section['id']) . '">';
+            echo do_shortcode($html);
             echo '</div></template>';
 
             // Initialize Shadow DOM
@@ -793,10 +782,10 @@ class TCL_Builder {
         try {
             if (!host.shadowRoot) {
                 const shadowRoot = host.attachShadow({mode: "open"});
+                shadowRoot.setAttribute("id", "' . esc_js($shadow_root_id) . '");
                 const content = template.content.cloneNode(true);
                 shadowRoot.appendChild(content);
                 
-                // Initialize Lucide icons if available
                 if (window.lucide) {
                     requestAnimationFrame(() => {
                         try {
@@ -807,9 +796,11 @@ class TCL_Builder {
                     });
                 }
 
-                // Dispatch event for section initialization
                 window.dispatchEvent(new CustomEvent("section:initialized", {
-                    detail: { sectionId: "' . esc_js($section_id) . '" }
+                    detail: { 
+                        sectionId: "' . esc_js($section_id) . '",
+                        shadowRootId: "' . esc_js($shadow_root_id) . '"
+                    }
                 }));
             }
         } catch (error) {
@@ -834,6 +825,7 @@ class TCL_Builder {
             echo 'Error processing section content';
             echo '</div>';
         }
+
     }
 
 

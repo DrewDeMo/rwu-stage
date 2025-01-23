@@ -91,7 +91,27 @@
 				return;
 			}
 
-			// Get the actual ID from the host element
+			// Check if this section uses shadow DOM
+			const useShadowDOM = sectionHost.getAttribute('data-shadow-context') === 'true';
+
+			if (!useShadowDOM) {
+				// For non-shadow DOM sections, initialize directly
+				const sectionData = window.tclBuilderSections?.[sectionId];
+				if (sectionData && sectionData.type === 'html' && sectionData.content?.js) {
+					requestAnimationFrame(() => {
+						try {
+							// Execute JS in global scope for non-shadow sections
+							const fn = new Function(sectionData.content.js);
+							fn.call(window);
+						} catch (error) {
+							console.error('Failed to initialize section JS:', error);
+						}
+					});
+				}
+				return;
+			}
+
+			// Rest of the shadow DOM initialization code
 			const hostId = sectionHost.id;
 			if (!hostId) {
 				console.warn('Host element missing ID:', sectionId);
@@ -109,12 +129,8 @@
 					return false;
 				};
 
-				// Check immediately first
-				if (checkShadowRoot()) {
-					return;
-				}
+				if (checkShadowRoot()) return;
 
-				// If not ready, observe changes
 				const observer = new MutationObserver((mutations, obs) => {
 					if (checkShadowRoot()) {
 						obs.disconnect();
@@ -128,7 +144,6 @@
 					attributeFilter: ['data-initialized']
 				});
 
-				// Cleanup after timeout
 				setTimeout(() => {
 					observer.disconnect();
 					if (!checkShadowRoot()) {
@@ -149,7 +164,6 @@
 				}
 
 				if (sectionData.type === 'html' && sectionData.content?.js) {
-					// Wait for next frame to ensure DOM is ready
 					requestAnimationFrame(() => {
 						try {
 							this.initializeSectionJS(shadowRoot, sectionData.content.js, sectionId);
@@ -161,7 +175,6 @@
 			}).catch(error => {
 				console.error('Section initialization failed:', error);
 			});
-
 		},
 
 		waitForElements(root, selectors, sectionId) {
@@ -226,10 +239,6 @@
                 return;
             }
 
-            // Only apply shadow DOM context if explicitly enabled
-            const useShadowContext = shadowRoot.host.hasAttribute('data-shadow-context');
-            
-            // Create enhanced wrapper function with appropriate context
             const wrappedJs = `
                 (function(shadowRoot) {
                     'use strict';
@@ -239,17 +248,17 @@
                     const $$ = selector => shadowRoot.querySelectorAll(selector);
                     
                     // Safe window access
-                    const window = ${useShadowContext ? `{
+                    const window = {
                         setTimeout,
                         setInterval,
                         clearTimeout,
                         clearInterval,
                         requestAnimationFrame,
                         cancelAnimationFrame
-                    }` : 'window'};
+                    };
                     
-                    // Safe document replacement
-                    const document = ${useShadowContext ? `{
+                    // Safe document replacement with proper ID handling
+                    const document = {
                         createElement: (tag) => {
                             const el = shadowRoot.ownerDocument.createElement(tag);
                             shadowRoot.appendChild(el);
@@ -272,7 +281,7 @@
                             element.addEventListener(type, wrappedFn, options);
                             TCLBuilderFrontend.trackEventListener('${sectionId}', element, type, wrappedFn);
                         }
-                    }` : 'document'};
+                    };
 
                     try {
                         ${js}
@@ -281,7 +290,6 @@
                     }
                 })(this);`;
 
-            // Execute in shadow root context
             requestAnimationFrame(() => {
                 try {
                     const fn = new Function('root', wrappedJs);
@@ -291,6 +299,7 @@
                 }
             });
         },
+
 
 
 		createSafeProxy() {

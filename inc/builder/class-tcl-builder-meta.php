@@ -64,6 +64,9 @@ class TCL_Builder_Meta {
         return array_map(function($section) {
             $section['id'] = isset($section['id']) ? intval($section['id']) : time();
             
+            // Ensure shadow_context is set
+            $section['shadow_context'] = isset($section['shadow_context']) ? (bool)$section['shadow_context'] : false;
+            
             if ($section['type'] === 'html' && isset($section['content'])) {
                 // Handle legacy sections without js field
                 if (!isset($section['content']['js'])) {
@@ -113,6 +116,7 @@ class TCL_Builder_Meta {
                     'type' => sanitize_text_field($section['type']),
                     'title' => isset($section['title']) ? sanitize_text_field($section['title']) : '',
                     'designation' => isset($section['designation']) ? sanitize_text_field($section['designation']) : 'default',
+                    'shadow_context' => isset($section['shadow_context']) ? (bool)$section['shadow_context'] : false,
                     'last_modified' => current_time('mysql'),
                     'modified_by' => get_current_user_id(),
                     'version' => TCL_BUILDER_VERSION
@@ -152,10 +156,22 @@ class TCL_Builder_Meta {
                     }
 
                     // Base64 encode only if not already encoded
+                    // Process content with Shadow DOM awareness
+                    $html_content = isset($content['html']) ? $content['html'] : '';
+                    $css_content = isset($content['css']) ? $content['css'] : '';
+                    $js_content = isset($content['js']) ? $content['js'] : '';
+
+                    // Additional validation for Shadow DOM sections
+                    if ($processed_section['shadow_context']) {
+                        self::$logger->log('[ShadowDOM] Processing Shadow DOM section', 'info', array(
+                            'section_id' => $section_id
+                        ));
+                    }
+
                     $processed_section['content'] = array(
                         'html' => base64_encode(base64_decode($html_content, true) ?: $html_content),
                         'css' => base64_encode(base64_decode($css_content, true) ?: $css_content),
-                        'js' => base64_encode(base64_decode($content['js'] ?? '', true) ?: ($content['js'] ?? ''))
+                        'js' => base64_encode(base64_decode($js_content, true) ?: $js_content)
                     );
                 } else {
                     // For non-HTML sections, validate and store content

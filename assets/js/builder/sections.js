@@ -98,6 +98,7 @@
                             type: ['html', 'shortcode'].includes(section.type) ? section.type : 'html',
                             title: TCLBuilder.Utils.sanitize(section.title || 'Untitled Section'),
                             designation: section.designation || 'library',
+                            shadow_context: !!section.shadow_context,
                             content: section.type === 'html' ? {
                                 html: typeof section.content?.html === 'string' ? section.content.html : '',
                                 css: typeof section.content?.css === 'string' ? section.content.css : '',
@@ -349,14 +350,14 @@
 
                 // Process JS for shadow DOM if needed
                 if (section.type === 'html' && section.content?.js) {
-                    const needsShadowDOM = TCLBuilder.Modal.validateShadowDOMJS(section.content.js).length > 0 || section.content.shadowDOM;
-                    if (needsShadowDOM) {
+                    if (section.shadow_context) {
                         this.jsQueue.set(shadowRootId, this.initShadowJS(section.id, section.content.js));
                     } else {
-                        // Queue regular JS if no shadow DOM needed
+                        // Queue regular JS if shadow_context is false
                         this.jsQueue.set(shadowRootId, section.content.js);
                     }
                 }
+
 
                 const previewContent = this.formatPreviewContent(section.content, section.type);
 
@@ -372,6 +373,7 @@
                          data-id="${sanitizedSection.id}" 
                          data-type="${sanitizedSection.type}"
                          data-designation="${section.designation || 'library'}"
+                         data-shadow-context="${!!section.shadow_context}"
                          data-shadow-root-id="${shadowRootId}"
                          data-timestamp="${Date.now()}">
                         <div class="section-header">

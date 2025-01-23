@@ -80,6 +80,15 @@ add_action('after_setup_theme', 'tcl_builder_setup');
  * Enqueue frontend scripts and styles
  */
 function tcl_builder_scripts() {
+    // Web Components polyfill
+    wp_enqueue_script(
+        'webcomponents-polyfill',
+        'https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/2.8.0/webcomponents-bundle.js',
+        array(),
+        '2.8.0',
+        true
+    );
+
     // Frontend styles
     wp_enqueue_style(
         'tcl-builder-fonts',
@@ -93,6 +102,15 @@ function tcl_builder_scripts() {
         TCL_BUILDER_URI . '/assets/css/frontend.css',
         array('tcl-builder-fonts'),
         TCL_BUILDER_VERSION
+    );
+
+    // Enqueue frontend script before builder scripts
+    wp_enqueue_script(
+        'tcl-builder-frontend',
+        TCL_BUILDER_URI . '/assets/js/frontend.js',
+        array('jquery', 'webcomponents-polyfill'),
+        TCL_BUILDER_VERSION,
+        true
     );
 
     // Enqueue FontAwesome
@@ -423,7 +441,9 @@ function tcl_builder_admin_scripts() {
         'templateUri' => get_template_directory_uri(),
         'version' => TCL_BUILDER_VERSION,
         'campaignDid' => get_post_meta($post_id, TCL_Builder_DID::META_KEY, true),
-        'contactForm' => get_post_meta($post_id, TCL_Builder_Contact_Form::META_KEY, true)
+        'contactForm' => get_post_meta($post_id, TCL_Builder_Contact_Form::META_KEY, true),
+        'shadowDomSupported' => true,
+        'shadowDomVersion' => '1.0.0'
     ));
 }
 add_action('admin_enqueue_scripts', 'tcl_builder_admin_scripts');

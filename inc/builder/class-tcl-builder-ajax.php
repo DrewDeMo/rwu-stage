@@ -7,12 +7,42 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
+if (!defined('TCL_BUILDER_SHADOW_DOM_VERSION')) {
+    define('TCL_BUILDER_SHADOW_DOM_VERSION', '1.0.0');
+}
+
 class TCL_Builder_AJAX {
     /**
      * Instance of this class
      */
     private static $instance = null;
     private $logger;
+
+    /**
+     * Sanitize Shadow DOM JavaScript content
+     */
+    private function sanitize_shadow_dom_js($js_content) {
+        // Basic JS sanitization while preserving Shadow DOM patterns
+        $js_content = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $js_content);
+        return wp_strip_all_tags($js_content);
+    }
+
+    /**
+     * Validate Shadow DOM content
+     */
+    private function validate_shadow_dom_content($content) {
+        // Validate content structure and shadow DOM references
+        if (empty($content)) {
+            return false;
+        }
+        
+        // Check for basic UTF-8 compliance
+        if (!mb_check_encoding($content, 'UTF-8')) {
+            return false;
+        }
+        
+        return true;
+    }
 
     /**
      * Get single instance of this class
@@ -146,6 +176,7 @@ class TCL_Builder_AJAX {
                         'type' => sanitize_text_field($section['type']),
                         'title' => isset($section['title']) ? sanitize_text_field($section['title']) : 'Untitled Section',
                         'designation' => isset($section['designation']) ? sanitize_text_field($section['designation']) : 'library',
+                        'shadow_context' => isset($section['shadow_context']) ? (bool)$section['shadow_context'] : false,
                         'last_modified' => current_time('mysql')
                     );
 
@@ -155,10 +186,21 @@ class TCL_Builder_AJAX {
                             throw new Exception('Invalid HTML section content structure');
                         }
 
+                        $js_content = isset($section['content']['js']) ? $section['content']['js'] : '';
+                        if ($normalized_section['shadow_context']) {
+                            $js_content = $this->sanitize_shadow_dom_js($js_content);
+                            if (!$this->validate_shadow_dom_content($js_content)) {
+                                throw new Exception('Invalid Shadow DOM JavaScript content');
+                            }
+                            $this->logger->log('[ShadowDOM] Processed shadow DOM section', 'info', array(
+                                'section_id' => $normalized_section['id']
+                            ));
+                        }
+
                         $normalized_section['content'] = array(
                             'html' => wp_kses_post($section['content']['html']),
                             'css' => wp_strip_all_tags($section['content']['css']),
-                            'js' => isset($section['content']['js']) ? $section['content']['js'] : ''
+                            'js' => $js_content
                         );
                     } else {
                         if (!is_string($section['content'])) {
@@ -442,6 +484,7 @@ class TCL_Builder_AJAX {
             // Prepare export data with metadata
             $export_data = array(
                 'version' => TCL_BUILDER_VERSION,
+                'shadow_dom_version' => TCL_BUILDER_SHADOW_DOM_VERSION,
                 'timestamp' => current_time('mysql'),
                 'post_id' => $post_id,
                 'post_title' => get_the_title($post_id),
@@ -484,6 +527,15 @@ class TCL_Builder_AJAX {
             // Validate sections structure
             if (!isset($import_data['sections']) || !TCL_Builder_Sections_Manager::validate_sections_data($import_data['sections'])) {
                 throw new Exception(__('Invalid sections data structure.', 'tcl-builder'));
+            }
+
+            // Handle legacy imports
+            if (!isset($import_data['shadow_dom_version'])) {
+                // Legacy import - add shadow_context = false to all sections
+                foreach ($import_data['sections'] as &$section) {
+                    $section['shadow_context'] = false;
+                }
+                $this->logger->log('[ShadowDOM] Processed legacy import', 'info');
             }
 
             // Begin transaction-like operation

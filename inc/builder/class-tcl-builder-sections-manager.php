@@ -60,6 +60,13 @@ class TCL_Builder_Sections_Manager {
                 throw new Exception(__('Invalid sections data structure', 'tcl-builder'));
             }
 
+            // Add shadow DOM version check
+            if (isset($sections['shadow_dom_version'])) {
+                $this->logger->log('[ShadowDOM] Importing sections with Shadow DOM support', 'info', [
+                    'version' => $sections['shadow_dom_version']
+                ]);
+            }
+
             // Backup current sections
             $backup_sections = TCL_Builder_Meta::get_sections($post_id);
             
@@ -214,6 +221,28 @@ class TCL_Builder_Sections_Manager {
         return count($sections);
     }
 
+    private function validate_shadow_dom_section($section) {
+        if (!isset($section['shadow_context'])) {
+            return true; // Legacy section, no validation needed
+        }
+
+        if (!is_bool($section['shadow_context'])) {
+            return false;
+        }
+
+        if ($section['shadow_context'] && $section['type'] === 'html') {
+            // Validate shadow DOM specific content
+            if (!isset($section['content']['js'])) {
+                return true; // JS is optional
+            }
+
+            // Basic UTF-8 validation for JS content
+            return mb_check_encoding($section['content']['js'], 'UTF-8');
+        }
+
+        return true;
+    }
+
     public static function validate_sections_data($sections) {
         if (!is_array($sections)) {
             return false;
@@ -221,6 +250,11 @@ class TCL_Builder_Sections_Manager {
 
         foreach ($sections as $section) {
             if (!isset($section['type']) || !isset($section['content'])) {
+                return false;
+            }
+
+            // Validate shadow DOM context if present
+            if (!self::get_instance()->validate_shadow_dom_section($section)) {
                 return false;
             }
 
