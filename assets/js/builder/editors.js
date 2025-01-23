@@ -8,19 +8,44 @@
 
     // Ensure TCLBuilder exists
     if (typeof window.TCLBuilder === 'undefined') {
-        console.error('TCLBuilder not found. Editors module initialization failed.');
+        console.error('[ShadowDOM] TCLBuilder not found. Editors module initialization failed.');
         return;
     }
 
     // Extend existing TCLBuilder.Editors
     $.extend(TCLBuilder.Editors, {
+        // Add shadow DOM utilities
+        wrapJSForShadowDOM(code, rootId) {
+            return `
+try {
+    (function(root) {
+        const shadowRoot = document.querySelector('[data-shadow-id="${rootId}"]')?.shadowRoot;
+        if (!shadowRoot) throw new Error('[ShadowDOM] Shadow root not found');
+        
+        // Proxy DOM APIs
+        const document = new Proxy(shadowRoot, {
+            get: (target, prop) => {
+                if (prop === 'querySelector' || prop === 'querySelectorAll') {
+                    return (...args) => target[prop].apply(target, args);
+                }
+                return target[prop];
+            }
+        });
+        
+        ${code}
+    })(document);
+} catch (error) {
+    console.error('[ShadowDOM] Section script error:', error);
+}`;
+        },
+
         init() {
             this.initializeCodeMirror();
         },
 
         initializeCodeMirror() {
             if (!window.wp?.codeEditor) {
-                console.warn('CodeMirror not available');
+                console.warn('[ShadowDOM] CodeMirror not available');
                 return;
             }
 
@@ -104,10 +129,21 @@
                     if (editor?.codemirror) {
                         const cm = editor.codemirror;
 
-                        // Error handling
+                        // Enhanced error handling for shadow DOM
                         cm.on('error', (instance, error) => {
-                            console.warn('CodeMirror error:', error);
-                            instance.setValue(instance.getValue()); // Reset the editor
+                            console.error('[ShadowDOM] CodeMirror error:', error);
+                            TCLBuilder.Events.publish('shadow:editor:error', { error, editor: instance });
+                            instance.setValue(instance.getValue());
+                        });
+
+                        // Shadow DOM context validation
+                        cm.on('change', () => {
+                            if (cm.getOption('mode') === 'javascript') {
+                                const value = cm.getValue();
+                                if (value.includes('document.') || value.includes('window.')) {
+                                    console.warn('[ShadowDOM] Direct document/window access detected. Consider using shadow root context.');
+                                }
+                            }
                         });
 
                         // Handle resize with improved debouncing and error handling
@@ -251,7 +287,7 @@
                 TCLBuilder.Events.publish('editors:initialized');
 
             } catch (error) {
-                console.error('Error initializing editors:', error);
+                console.error('[ShadowDOM] Error initializing editors:', error);
             }
         },
 

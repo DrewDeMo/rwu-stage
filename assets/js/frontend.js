@@ -2,8 +2,64 @@
 	'use strict';
 
 	const TCLBuilderFrontend = {
+		observers: new Map(),
+		eventListeners: new Map(),
+
 		init() {
 			this.initializeSections();
+			this.observeContentChanges();
+		},
+
+		observeContentChanges() {
+			const contentObserver = new MutationObserver((mutations) => {
+				mutations.forEach(mutation => {
+					mutation.addedNodes.forEach(node => {
+						if (node.classList?.contains('tcl-builder-section')) {
+							this.initializeSection(node);
+						}
+					});
+					mutation.removedNodes.forEach(node => {
+						if (node.classList?.contains('tcl-builder-section')) {
+							this.cleanupSection(node);
+						}
+					});
+				});
+			});
+
+			contentObserver.observe(document.body, {
+				childList: true,
+				subtree: true
+			});
+		},
+
+		cleanupSection(section) {
+			const sectionId = section.getAttribute('data-section-id');
+			
+			// Cleanup observers
+			if (this.observers.has(sectionId)) {
+				this.observers.get(sectionId).forEach(observer => observer.disconnect());
+				this.observers.delete(sectionId);
+			}
+
+			// Cleanup event listeners
+			if (this.eventListeners.has(sectionId)) {
+				this.eventListeners.get(sectionId).forEach(({element, type, fn}) => {
+					try {
+						element.removeEventListener(type, fn);
+					} catch (error) {
+						console.warn(`Failed to remove event listener: ${error.message}`);
+					}
+				});
+				this.eventListeners.delete(sectionId);
+			}
+
+			// Clear any remaining references
+			const sectionHost = section.querySelector('.tcl-builder-section-host');
+			if (sectionHost && sectionHost.shadowRoot) {
+				while (sectionHost.shadowRoot.firstChild) {
+					sectionHost.shadowRoot.removeChild(sectionHost.shadowRoot.firstChild);
+				}
+			}
 		},
 
 		initializeSections() {
@@ -18,156 +74,290 @@
 		},
 
 		initializeSection(section) {
+			if (!section || !section.classList) {
+				console.warn('Invalid section element');
+				return;
+			}
+
 			const sectionId = section.getAttribute('data-section-id');
+			if (!sectionId) {
+				console.warn('Section missing data-section-id');
+				return;
+			}
+
 			const sectionHost = section.querySelector('.tcl-builder-section-host');
-			
-			if (!sectionHost || !sectionHost.shadowRoot) {
-				console.warn('Shadow root not found for section:', sectionId);
+			if (!sectionHost) {
+				console.warn('Section host not found:', sectionId);
 				return;
 			}
 
-			const shadowRoot = sectionHost.shadowRoot;
-			const sectionData = window.tclBuilderSections?.[sectionId];
-
-			if (!sectionData) {
-				console.warn('Section data not found:', sectionId);
+			// Get the actual ID from the host element
+			const hostId = sectionHost.id;
+			if (!hostId) {
+				console.warn('Host element missing ID:', sectionId);
 				return;
 			}
 
-			if (sectionData.type === 'html' && sectionData.content?.js) {
-				this.initializeSectionJS(shadowRoot, sectionData.content.js, sectionId);
-			}
-		},
+			// Create a promise that resolves when the section is initialized
+			const waitForInitialization = new Promise((resolve) => {
+				const checkShadowRoot = () => {
+					const shadowRoot = sectionHost.shadowRoot;
+					if (shadowRoot && shadowRoot.querySelector('.section-content')) {
+						resolve(shadowRoot);
+						return true;
+					}
+					return false;
+				};
 
-		waitForElements(root, selectors) {
-            return new Promise((resolve, reject) => {
-                // Filter out empty or invalid selectors
-                const validSelectors = selectors.filter(selector => 
-                    typeof selector === 'string' && selector.trim().length > 0
-                );
-
-                if (validSelectors.length === 0) {
-                    resolve([]);
-                    return;
-                }
-
-                // First check if elements already exist
-                const elements = validSelectors.map(selector => root.querySelector(selector));
-                if (elements.every(el => el !== null)) {
-                    resolve(elements);
-                    return;
-                }
-
-                let timeoutId;
-                const observer = new MutationObserver(() => {
-                    const elements = validSelectors.map(selector => root.querySelector(selector));
-                    if (elements.every(el => el !== null)) {
-                        observer.disconnect();
-                        clearTimeout(timeoutId);
-                        resolve(elements);
-                    }
-                });
-
-                observer.observe(root, {
-                    childList: true,
-                    subtree: true,
-                    attributes: true
-                });
-
-                // Set timeout to prevent infinite waiting
-                timeoutId = setTimeout(() => {
-                    observer.disconnect();
-                    const elements = validSelectors.map(selector => root.querySelector(selector));
-                    const missingSelectors = validSelectors.filter((selector, index) => elements[index] === null);
-                    console.warn(`[Section] Timed out waiting for elements:`, missingSelectors);
-                    resolve(elements); // Resolve with whatever elements we have
-                }, 2000); // 2 second timeout
-            });
-        },
-
-initializeSectionJS(shadowRoot, js, sectionId) {
-	requestAnimationFrame(() => {
-		try {
-			// Transform document-level DOM queries to shadow root context
-			const transformedJs = js
-				.replace(/document\.getElementById\(['"](.*?)['"]\)/g, '$(\'#$1\')')
-				.replace(/document\.querySelector\(['"](.*?)['"]\)/g, '$(\'$1\')')
-				.replace(/document\.getElementsByClassName\(['"](.*?)['"]\)/g, '$$(\'.$1\')')
-				.replace(/document\.getElementsByTagName\(['"](.*?)['"]\)/g, '$$(\'"$1\')')
-				.replace(/document\.querySelectorAll\(['"](.*?)['"]\)/g, '$$(\'"$1\')')
-				.replace(/document\.createElement\(['"](.*?)['"]\)/g, 'root.ownerDocument.createElement(\'$1\')');
-
-			const selectorRegex = /[#.]?[\w-]+/g;
-			const matches = transformedJs.match(selectorRegex) || [];
-			const selectors = [...new Set(matches.filter(s => s && !s.match(/^(function|return|const|let|var|new|try|catch)$/)))];
-			selectors.push('.section-content');
-
-			// Enhanced safe element accessor with detailed error tracking
-			const $ = selector => {
-				const el = shadowRoot.querySelector(selector);
-				if (!el) {
-					console.warn(`[Section ${sectionId}] Element not found: ${selector}`);
-					return new Proxy({}, {
-						get: (target, prop) => {
-							if (prop === 'style') return new Proxy({}, {
-								get: () => () => {},
-								set: () => true
-							});
-							if (prop === 'classList') return {
-								add: () => {},
-								remove: () => {},
-								toggle: () => false,
-								contains: () => false
-							};
-							if (prop === 'addEventListener' || prop === 'removeEventListener') {
-								return () => {
-									console.warn(`[Section ${sectionId}] Attempted to add/remove event listener on non-existent element: ${selector}`);
-								};
-							}
-							if (typeof prop === 'string' && prop.startsWith('on')) return null;
-							return () => null;
-						},
-						set: () => true
-					});
+				// Check immediately first
+				if (checkShadowRoot()) {
+					return;
 				}
-				return el;
-			};
 
-			const $$ = selector => Array.from(shadowRoot.querySelectorAll(selector) || []);
-			
-			let jQuery;
-			if (window.jQuery) {
-				jQuery = selector => window.jQuery(shadowRoot).find(selector);
-				jQuery.fn = window.jQuery.fn;
-			}
+				// If not ready, observe changes
+				const observer = new MutationObserver((mutations, obs) => {
+					if (checkShadowRoot()) {
+						obs.disconnect();
+					}
+				});
 
-			this.waitForElements(shadowRoot, selectors).then(() => {
-				try {
-					const wrappedJs = `
+				observer.observe(sectionHost, { 
+					childList: true, 
+					subtree: true,
+					attributes: true,
+					attributeFilter: ['data-initialized']
+				});
+
+				// Cleanup after timeout
+				setTimeout(() => {
+					observer.disconnect();
+					if (!checkShadowRoot()) {
+						console.warn('Shadow root initialization timed out:', sectionId);
+						resolve(null);
+					}
+				}, 5000);
+			});
+
+			// Initialize section once shadow DOM is ready
+			waitForInitialization.then(shadowRoot => {
+				if (!shadowRoot) return;
+
+				const sectionData = window.tclBuilderSections?.[sectionId];
+				if (!sectionData) {
+					console.warn('Section data not found:', sectionId);
+					return;
+				}
+
+				if (sectionData.type === 'html' && sectionData.content?.js) {
+					// Wait for next frame to ensure DOM is ready
+					requestAnimationFrame(() => {
 						try {
-							${transformedJs}
+							this.initializeSectionJS(shadowRoot, sectionData.content.js, sectionId);
 						} catch (error) {
-							console.error('[Section ${sectionId}] Runtime error:', error.message);
-							throw error;
+							console.error('Failed to initialize section JS:', error);
 						}
-					`;
-					const fn = new Function('$', '$$', 'jQuery', 'root', wrappedJs);
-					fn.call(shadowRoot, $, $$, jQuery, shadowRoot);
-				} catch (error) {
-					console.error(`[Section ${sectionId}] JavaScript Error:`, {
-						message: error.message,
-						stack: error.stack,
-						selectors: selectors.join(', ')
 					});
 				}
 			}).catch(error => {
-				console.error(`[Section ${sectionId}] Element initialization error:`, error);
+				console.error('Section initialization failed:', error);
 			});
-		} catch (error) {
-			console.error(`[Section ${sectionId}] Setup error:`, error);
-		}
-	});
-}
+
+		},
+
+		waitForElements(root, selectors, sectionId) {
+			return new Promise((resolve, reject) => {
+				const validSelectors = selectors.filter(selector => 
+					typeof selector === 'string' && selector.trim().length > 0
+				);
+
+				if (validSelectors.length === 0) {
+					resolve([]);
+					return;
+				}
+
+				const elements = validSelectors.map(selector => root.querySelector(selector));
+				if (elements.every(el => el !== null)) {
+					resolve(elements);
+					return;
+				}
+
+				const observer = new MutationObserver(() => {
+					const elements = validSelectors.map(selector => root.querySelector(selector));
+					if (elements.every(el => el !== null)) {
+						observer.disconnect();
+						resolve(elements);
+					}
+				});
+
+				observer.observe(root, {
+					childList: true,
+					subtree: true,
+					attributes: true
+				});
+
+				// Store observer for cleanup
+				if (!this.observers.has(sectionId)) {
+					this.observers.set(sectionId, new Set());
+				}
+				this.observers.get(sectionId).add(observer);
+
+				setTimeout(() => {
+					observer.disconnect();
+					const elements = validSelectors.map(selector => root.querySelector(selector));
+					resolve(elements);
+				}, 2000);
+			});
+		},
+
+		trackEventListener(sectionId, element, type, fn) {
+			if (!this.eventListeners.has(sectionId)) {
+				this.eventListeners.set(sectionId, new Set());
+			}
+			this.eventListeners.get(sectionId).add({
+				element,
+				type,
+				fn
+			});
+		},
+
+		initializeSectionJS(shadowRoot, js, sectionId) {
+            if (!shadowRoot || !shadowRoot.querySelector('.section-content')) {
+                throw new Error('Invalid shadow root or content not ready');
+            }
+
+            // Create enhanced wrapper function for shadow DOM context
+            const wrappedJs = `
+                (function(shadowRoot) {
+                    'use strict';
+                    
+                    // Provide scoped query helpers
+                    const $ = selector => shadowRoot.querySelector(selector);
+                    const $$ = selector => shadowRoot.querySelectorAll(selector);
+                    
+                    // Safe window access
+                    const window = {
+                        setTimeout,
+                        setInterval,
+                        clearTimeout,
+                        clearInterval,
+                        requestAnimationFrame,
+                        cancelAnimationFrame
+                    };
+                    
+                    // Safe document replacement
+                    const document = {
+                        createElement: (tag) => {
+                            const el = shadowRoot.ownerDocument.createElement(tag);
+                            shadowRoot.appendChild(el);
+                            return el;
+                        },
+                        querySelector: selector => shadowRoot.querySelector(selector),
+                        querySelectorAll: selector => shadowRoot.querySelectorAll(selector),
+                        getElementById: id => shadowRoot.querySelector('#' + id),
+                        getElementsByClassName: className => shadowRoot.querySelectorAll('.' + className),
+                        addEventListener: (type, fn, options) => {
+                            const wrappedFn = (e) => {
+                                e.stopPropagation();
+                                fn.call(shadowRoot, e);
+                            };
+                            shadowRoot.addEventListener(type, wrappedFn, options);
+                            TCLBuilderFrontend.trackEventListener('${sectionId}', shadowRoot, type, wrappedFn);
+                        }
+                    };
+
+                    try {
+                        ${js}
+                    } catch (error) {
+                        console.error('[Section ${sectionId}] JS execution error:', error);
+                    }
+                })(this);`;
+
+            // Execute in shadow root context
+            requestAnimationFrame(() => {
+                try {
+                    const fn = new Function('root', wrappedJs);
+                    fn.call(shadowRoot, shadowRoot);
+                } catch (error) {
+                    console.error(`[Section ${sectionId}] JS execution error:`, error);
+                }
+            });
+        },
+
+
+		createSafeProxy() {
+			return new Proxy({}, {
+				get: (target, prop) => {
+					if (prop === 'style') return new Proxy({}, {
+						get: () => () => {},
+						set: () => true
+					});
+					if (prop === 'classList') return {
+						add: () => {},
+						remove: () => {},
+						toggle: () => false,
+						contains: () => false
+					};
+					return () => this.createSafeProxy();
+				}
+			});
+		},
+
+		wrapElement(el, sectionId) {
+			const wrapper = new Proxy(el, {
+				get: (target, prop) => {
+					if (prop === 'addEventListener') {
+						return (type, fn) => {
+							const wrappedFn = (e) => {
+								e.stopPropagation();
+								fn.call(target, e);
+							};
+							target.addEventListener(type, wrappedFn);
+							
+							if (!this.eventListeners.has(sectionId)) {
+								this.eventListeners.set(sectionId, new Set());
+							}
+							this.eventListeners.get(sectionId).add({
+								element: target,
+								type,
+								fn: wrappedFn
+							});
+						};
+					}
+					return target[prop];
+				}
+			});
+			return wrapper;
+		},
+
+		wrapjQuery($el, sectionId) {
+			const originalOn = $el.on;
+			$el.on = function(types, selector, data, fn) {
+				if (typeof selector === 'function') {
+					fn = selector;
+					selector = undefined;
+				}
+				const wrappedFn = function(e) {
+					e.stopPropagation();
+					return fn.apply(this, arguments);
+				};
+				
+				if (!TCLBuilderFrontend.eventListeners.has(sectionId)) {
+					TCLBuilderFrontend.eventListeners.set(sectionId, new Set());
+				}
+				
+				TCLBuilderFrontend.eventListeners.get(sectionId).add({
+					element: this,
+					type: types,
+					fn: wrappedFn
+				});
+				
+				return originalOn.call(this, types, selector, data, wrappedFn);
+			};
+			return $el;
+		},
+
+
+
 	};
 
 	if (document.readyState === 'loading') {

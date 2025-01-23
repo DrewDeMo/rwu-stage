@@ -8,6 +8,50 @@
 
     // Extend existing TCLBuilder.Sections
     Object.assign(TCLBuilder.Sections, {
+        jsQueue: new Map(),
+
+        initShadowJS(sectionId, jsContent) {
+            // Enhanced shadow DOM initialization with better scoping
+            return `
+                try {
+                    const shadowRoot = this.getRootNode();
+                    // Provide scoped query helpers
+                    const $ = selector => shadowRoot.querySelector(selector);
+                    const $$ = selector => shadowRoot.querySelectorAll(selector);
+                    
+                    // Add safe window access
+                    const safeWindow = {
+                        setTimeout,
+                        setInterval,
+                        clearTimeout,
+                        clearInterval,
+                        requestAnimationFrame,
+                        cancelAnimationFrame
+                    };
+                    
+                    // Add safe document replacement
+                    const safeDocument = {
+                        createElement: (tag) => {
+                            const el = document.createElement(tag);
+                            shadowRoot.appendChild(el);
+                            return el;
+                        }
+                    };
+                    
+                    // Execute in strict mode with safe context
+                    (function() {
+                        'use strict';
+                        // Provide safe globals
+                        const window = safeWindow;
+                        const document = safeDocument;
+                        ${jsContent}
+                    })();
+                } catch (error) {
+                    console.error('Shadow DOM JS Error in section ${sectionId}:', error);
+                }
+            `;
+        },
+
         init() {
             this.loadSections();
             this.bindEvents();
@@ -93,6 +137,10 @@
                         <i data-lucide="upload"></i>
                         Import
                     </button>
+                    <button class="button add-test-section-btn">
+                        <i data-lucide="beaker"></i>
+                        Add Test Section
+                    </button>
                 </div>
             `);
 
@@ -100,6 +148,18 @@
             TCLBuilder.Core.sections.forEach(section => {
                 container.append(this.createSectionHTML(section));
             });
+
+            // Initialize Shadow DOM and execute queued JS
+            this.jsQueue.forEach((jsContent, shadowRootId) => {
+                const container = document.getElementById(shadowRootId);
+                if (container) {
+                    const shadowRoot = container.attachShadow({ mode: 'open' });
+                    const script = document.createElement('script');
+                    script.textContent = jsContent;
+                    shadowRoot.appendChild(script);
+                }
+            });
+            this.jsQueue.clear();
 
             // Add bottom dashed button
             container.append(`
@@ -280,14 +340,24 @@
                     return '';
                 }
 
-                // Sanitize all section data
+                const shadowRootId = `shadow-root-${section.id}-${Date.now()}`;
                 const sanitizedSection = {
                     id: parseInt(section.id),
                     type: TCLBuilder.Utils.sanitize(section.type || 'html'),
                     title: TCLBuilder.Utils.sanitize(section.title || 'Untitled Section'),
                 };
 
-                // Generate preview content
+                // Process JS for shadow DOM if needed
+                if (section.type === 'html' && section.content?.js) {
+                    const needsShadowDOM = TCLBuilder.Modal.validateShadowDOMJS(section.content.js).length > 0 || section.content.shadowDOM;
+                    if (needsShadowDOM) {
+                        this.jsQueue.set(shadowRootId, this.initShadowJS(section.id, section.content.js));
+                    } else {
+                        // Queue regular JS if no shadow DOM needed
+                        this.jsQueue.set(shadowRootId, section.content.js);
+                    }
+                }
+
                 const previewContent = this.formatPreviewContent(section.content, section.type);
 
                 // Log section rendering
@@ -302,6 +372,7 @@
                          data-id="${sanitizedSection.id}" 
                          data-type="${sanitizedSection.type}"
                          data-designation="${section.designation || 'library'}"
+                         data-shadow-root-id="${shadowRootId}"
                          data-timestamp="${Date.now()}">
                         <div class="section-header">
                             <div class="drag-handle" aria-label="Drag to reorder">
@@ -334,7 +405,9 @@
                         <div class="section-content">
                             <div class="content-block ${sanitizedSection.type}-block">
                                 <i data-lucide="${sanitizedSection.type === 'html' ? 'code-2' : 'braces'}"></i>
-                                <div class="preview-content">${previewContent || 'Empty section'}</div>
+                                <div class="preview-content shadow-root-container" id="${shadowRootId}">
+                                    ${previewContent || 'Empty section'}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -649,6 +722,34 @@
         },
 
 
+        addTestSection() {
+            const testSection = {
+                id: Date.now() + Math.floor(Math.random() * 1000),
+                type: 'html',
+                title: 'Test Shadow DOM Section',
+                designation: 'library',
+                content: {
+                    html: `
+                        <button id="test-button">Click Me</button>
+                        <div id="test-result">Initial Text</div>
+                    `,
+                    css: `
+                        #test-button { padding: 10px; }
+                        #test-result { margin-top: 10px; }
+                    `,
+                    js: `
+                        document.getElementById('test-button').addEventListener('click', function() {
+                            document.getElementById('test-result').textContent = 'It works!';
+                        });
+                    `
+                }
+            };
+
+            TCLBuilder.Core.sections.push(testSection);
+            this.renderSections();
+            TCLBuilder.WordPress.save();
+        },
+
         bindEvents() {
             // Add hidden file input for imports
             if (!jQuery('.sections-import-file').length) {
@@ -683,6 +784,11 @@
 
             jQuery(document).on('click', '.add-section-btn', () => {
                 TCLBuilder.Modal.open('editor');
+            });
+
+            // Add test section button
+            jQuery(document).on('click', '.add-test-section-btn', () => {
+                this.addTestSection();
             });
 
             // Handle designation changes

@@ -1,42 +1,57 @@
 /**
  * TCL Builder Events Module
- * Handles pub/sub event system
+ * Handles pub/sub event system with Shadow DOM support
  */
 
 (function($) {
     'use strict';
 
-    // Ensure TCLBuilder exists
     if (typeof window.TCLBuilder === 'undefined') {
-        console.error('TCLBuilder not found. Events module initialization failed.');
+        console.error('[ShadowDOM] TCLBuilder not found. Events module initialization failed.');
         return;
     }
 
-    // Extend existing TCLBuilder.Events
     $.extend(TCLBuilder.Events, {
         subscribers: {},
+        shadowContexts: new Map(),
 
-        subscribe(event, callback) {
+        subscribe(event, callback, context = null) {
             if (!this.subscribers[event]) {
                 this.subscribers[event] = [];
             }
-            this.subscribers[event].push(callback);
+            const subscriber = { callback, context };
+            this.subscribers[event].push(subscriber);
 
-            // Return unsubscribe function
             return () => {
-                this.subscribers[event] = this.subscribers[event].filter(cb => cb !== callback);
+                this.subscribers[event] = this.subscribers[event].filter(s => s !== subscriber);
             };
         },
 
-        publish(event, data) {
+        publish(event, data, context = null) {
             if (!this.subscribers[event]) return;
-            this.subscribers[event].forEach(callback => {
+            
+            const prefix = event.startsWith('shadow:') ? '[ShadowDOM] ' : '';
+            console.debug(`${prefix}Publishing event: ${event}`);
+
+            this.subscribers[event].forEach(subscriber => {
                 try {
-                    callback(data);
+                    if (!context || subscriber.context === context) {
+                        subscriber.callback(data);
+                    }
                 } catch (error) {
-                    console.error(`Error in event subscriber for ${event}:`, error);
+                    console.error(`${prefix}Error in event subscriber for ${event}:`, error);
                 }
             });
+        },
+
+        registerShadowContext(rootId, shadowRoot) {
+            this.shadowContexts.set(rootId, shadowRoot);
+            this.publish('shadow:context:created', { rootId, shadowRoot });
+        },
+
+        unregisterShadowContext(rootId) {
+            this.shadowContexts.delete(rootId);
+            this.publish('shadow:context:destroyed', { rootId });
         },
 
         unsubscribeAll(event) {
@@ -44,6 +59,7 @@
                 delete this.subscribers[event];
             } else {
                 this.subscribers = {};
+                this.shadowContexts.clear();
             }
         }
     });

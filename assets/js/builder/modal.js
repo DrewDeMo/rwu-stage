@@ -183,10 +183,15 @@
                     const cssContent = TCLBuilder.Core.editors.css.codemirror.getValue();
                     const jsContent = TCLBuilder.Core.editors.js.codemirror.getValue();
 
+                    // Process JS for shadow DOM if it contains DOM operations
+                    const needsShadowDOM = this.validateShadowDOMJS(jsContent).length > 0;
+                    const processedJS = needsShadowDOM ? this.rewriteForShadowDOM(jsContent) : jsContent;
+
                     content = {
                         html: htmlContent.trim(),
                         css: cssContent.trim(),
-                        js: jsContent.trim()
+                        js: processedJS.trim(),
+                        shadowDOM: needsShadowDOM
                     };
 
                     if (content.html && !TCLBuilder.Utils.validateHTML(content.html)) {
@@ -206,6 +211,12 @@
                             new Function(content.js);
                         } catch (e) {
                             validationErrors.push('JavaScript syntax error: ' + e.message);
+                        }
+
+                        // Validate JS for shadow DOM compatibility
+                        const shadowDOMViolations = this.validateShadowDOMJS(content.js);
+                        if (shadowDOMViolations.length > 0) {
+                            validationErrors.push('Shadow DOM compatibility issues:\n' + shadowDOMViolations.join('\n'));
                         }
                     }
                 } else {
@@ -325,6 +336,59 @@
                 `);
             }
             jQuery('.sections-import-file').trigger('click');
+        },
+
+        validateShadowDOMJS(js) {
+            const violations = [];
+            
+            // Check for direct DOM access patterns
+            const domViolations = {
+                'document.querySelector': '• Use this.shadowRoot.querySelector instead of document.querySelector',
+                'document.getElementById': '• Use this.shadowRoot.querySelector("#id") instead of getElementById',
+                'document.getElementsBy': '• Use this.shadowRoot.querySelectorAll instead of getElementsBy*',
+                'document.body': '• Avoid document.body access, use this.shadowRoot',
+                'window.document': '• Avoid window.document access, use this.shadowRoot',
+                'document.createElement': '• Use this.shadowRoot.appendChild with template elements',
+                'document.addEventListener': '• Use this.shadowRoot.addEventListener for events'
+            };
+
+            Object.entries(domViolations).forEach(([pattern, message]) => {
+                if (js.includes(pattern)) {
+                    violations.push(message);
+                }
+            });
+
+            // Check for global scope pollution
+            if (/\bwindow\.[a-zA-Z_$][a-zA-Z0-9_$]*\s*=/.test(js)) {
+                violations.push('• Avoid adding properties to window object');
+            }
+
+            return violations;
+        },
+
+        rewriteForShadowDOM(js) {
+            // Replace direct DOM queries with shadow root context
+            let shadowJS = js
+                .replace(/document\.querySelector\(/g, 'this.shadowRoot.querySelector(')
+                .replace(/document\.getElementById\(['"](.*?)['"]\)/g, 'this.shadowRoot.querySelector("#$1")')
+                .replace(/document\.getElementsByClassName\(['"](.*?)['"]\)/g, 'this.shadowRoot.querySelectorAll(".$1")')
+                .replace(/document\.getElementsByTagName\(/g, 'this.shadowRoot.querySelectorAll(')
+                .replace(/document\.body/g, 'this.shadowRoot')
+                .replace(/window\.document/g, 'this.shadowRoot');
+
+            // Wrap in shadow DOM class
+            return `
+class SectionComponent extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({mode: 'open'});
+    }
+    
+    connectedCallback() {
+        ${shadowJS}
+    }
+}
+customElements.define('section-component-${Date.now()}', SectionComponent);`;
         },
 
         bindEvents() {

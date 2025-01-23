@@ -112,7 +112,6 @@
 
         importSections(postId, sections) {
             console.log('Starting import process for post:', postId);
-            console.log('Sections data:', sections);
 
             // Validate sections data
             if (!Array.isArray(sections)) {
@@ -120,6 +119,44 @@
                 alert(tclBuilderSectionsManager.strings.error);
                 return;
             }
+
+            // Process sections for shadow DOM compatibility
+            const processedSections = sections.map(section => {
+                const newId = Date.now() + Math.floor(Math.random() * 1000);
+                const shadowRootId = `shadow-root-${newId}`;
+                
+                // Handle HTML content type sections
+                if (section.type === 'html' && section.content) {
+                    const content = typeof section.content === 'string' ? 
+                        JSON.parse(section.content) : section.content;
+                        
+                    // Process JS if present and needs shadow DOM
+                    if (content.js) {
+                        const needsShadowDOM = TCLBuilder.Modal.validateShadowDOMJS(content.js).length > 0;
+                        if (needsShadowDOM || section.shadowDOM) {
+                            content.js = TCLBuilder.Modal.rewriteForShadowDOM(content.js);
+                            content.shadowDOM = true;
+                        }
+                    }
+                    
+                    return {
+                        ...section,
+                        id: newId,
+                        shadowRootId,
+                        content: content,
+                        imported: true,
+                        importTimestamp: Date.now()
+                    };
+                }
+                
+                // Return non-HTML sections unchanged except for new ID
+                return {
+                    ...section,
+                    id: newId,
+                    imported: true,
+                    importTimestamp: Date.now()
+                };
+            });
 
             const button = $(`.import-sections[data-post-id="${postId}"]`);
             button.prop('disabled', true);
@@ -130,7 +167,7 @@
                 nonce: tclBuilderSectionsManager.nonce,
                 post_id: postId,
                 sections: JSON.stringify({
-                    sections: sections,
+                    sections: processedSections,
                     version: tclBuilderSectionsManager.version || '1.0.0'
                 })
             };

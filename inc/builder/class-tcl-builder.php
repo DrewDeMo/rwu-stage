@@ -719,16 +719,14 @@ class TCL_Builder {
             $html = isset($section['content']['html']) ? $section['content']['html'] : '';
             $js = isset($section['content']['js']) ? $section['content']['js'] : '';
 
-            // Add default styles to prevent unwanted spacing
-            $css = ":host { display: block; margin: 0; padding: 0; } :host > div { margin: 0; padding: 0; }\n" . $css;
+            // Add default styles and scoping
+            $css = ":host { display: block; margin: 0; padding: 0; box-sizing: border-box; } :host > div { margin: 0; padding: 0; box-sizing: inherit; }\n" . $css;
             
             // Process PHP template tags in the HTML content
             $processed_html = preg_replace_callback(
                 '/\<\?php\s+echo\s+([^;]+);\s*\?\>/i',
                 function($matches) {
                     $php_code = trim($matches[1]);
-                    
-                    // Map of common template tags to their functions
                     $template_tags = array(
                         'get_template_directory_uri()' => 'get_template_directory_uri',
                         'get_stylesheet_directory_uri()' => 'get_stylesheet_directory_uri',
@@ -747,16 +745,21 @@ class TCL_Builder {
                             return esc_url($func());
                         }
                     }
-                    
                     return '';
                 },
                 $html
             );
 
+            // Create the host element first
+            echo '<div id="' . esc_attr($section_id) . '" class="tcl-builder-section-host" 
+                  data-section-id="' . esc_attr($section['id']) . '" 
+                  data-section-type="' . esc_attr($section['type']) . '"
+                  data-section-designation="' . esc_attr($section['designation'] ?? 'library') . '"></div>';
+
             // Create a template for the Shadow DOM content
             echo '<template id="' . esc_attr($section_id) . '-template">';
             
-            // Add FontAwesome and jQuery
+            // Add required resources
             echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">';
             if (strpos($js, 'jQuery') !== false || strpos($js, '$') !== false) {
                 echo '<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
@@ -764,144 +767,60 @@ class TCL_Builder {
             
             // Add wrapper div and custom CSS
             echo '<style>' . $css . '</style>';
-            echo '<div class="section-content">';
+            echo '<div class="section-content" data-section-id="' . esc_attr($section['id']) . '">';
             
             // Process shortcodes in HTML content
             $processed_html = do_shortcode($processed_html);
             echo apply_filters('tcl_builder_section_html', $processed_html, $section, $post_id);
             echo '</div></template>';
 
-            // Create the host element
-            echo '<div id="' . esc_attr($section_id) . '" class="tcl-builder-section-host"></div>';
-
-            // Initialize Shadow DOM and execute JavaScript
+            // Initialize Shadow DOM
             echo '<script>
 (function() {
-    const host = document.getElementById("' . esc_js($section_id) . '");
-    const template = document.getElementById("' . esc_js($section_id) . '-template");
-    const shadowRoot = host.attachShadow({mode: "open"});
-    shadowRoot.appendChild(template.content.cloneNode(true));
-
-    // Create a safe proxy for element access
-    const createSafeElement = () => {
-        return new Proxy({}, {
-            get: (target, prop) => {
-                if (prop === "style") return new Proxy({}, { set: () => true, get: () => "" });
-                if (prop === "classList") return { add: () => {}, remove: () => {}, toggle: () => false };
-                if (typeof prop === "string") return () => {};
-                return null;
-            }
-        });
-    };
-
-    // Enhanced element access functions
-    const createElementAccessors = (root) => {
-        const $ = selector => {
-            try {
-                const el = root.querySelector(selector);
-                return el || createSafeElement();
-            } catch (error) {
-                console.warn(`Error accessing element ${selector}:`, error);
-                return createSafeElement();
-            }
-        };
-
-        const $$ = selector => {
-            try {
-                return Array.from(root.querySelectorAll(selector) || []);
-            } catch (error) {
-                console.warn(`Error accessing elements ${selector}:`, error);
-                return [];
-            }
-        };
-
-        return { $, $$ };
-    };
-
-    // Wait for DOM content
-    const waitForDOM = () => new Promise(resolve => {
-        const check = () => {
-            const content = shadowRoot.querySelector(".section-content");
-            if (content) {
-                resolve();
-                return true;
-            }
-            return false;
-        };
-
-        if (!check()) {
-            const observer = new MutationObserver(() => {
-                if (check()) observer.disconnect();
-            });
-            observer.observe(shadowRoot, { childList: true, subtree: true });
-            setTimeout(() => observer.disconnect(), 5000);
+    const init = () => {
+        const host = document.getElementById("' . esc_js($section_id) . '");
+        const template = document.getElementById("' . esc_js($section_id) . '-template");
+        
+        if (!host || !template) {
+            console.warn("Missing host or template for section:", "' . esc_js($section_id) . '");
+            return;
         }
-    });
+        
+        try {
+            if (!host.shadowRoot) {
+                const shadowRoot = host.attachShadow({mode: "open"});
+                const content = template.content.cloneNode(true);
+                shadowRoot.appendChild(content);
+                
+                // Initialize Lucide icons if available
+                if (window.lucide) {
+                    requestAnimationFrame(() => {
+                        try {
+                            window.lucide.createIcons(shadowRoot);
+                        } catch (error) {
+                            console.warn("Lucide icons initialization failed:", error);
+                        }
+                    });
+                }
 
-    // Initialize section
-    waitForDOM().then(() => {
-        const { $, $$ } = createElementAccessors(shadowRoot);
-        let jQuery = window.jQuery ? selector => window.jQuery(shadowRoot).find(selector) : null;
-        if (jQuery) jQuery.fn = window.jQuery.fn;
-
-        // Initialize Lucide icons if available
-        if (window.lucide) {
-            try {
-                window.lucide.createIcons(shadowRoot);
-            } catch (error) {
-                console.warn("Lucide icons failed to load:", error);
+                // Dispatch event for section initialization
+                window.dispatchEvent(new CustomEvent("section:initialized", {
+                    detail: { sectionId: "' . esc_js($section_id) . '" }
+                }));
             }
-        }
-
-        // Transform and execute section JavaScript
-        try {';
-            
-            // Transform JavaScript on PHP side
-            $transformedJs = preg_replace(
-                array(
-                    '/document\.getElementById\([\'"](.+?)[\'"]\)/',
-                    '/document\.querySelector\([\'"](.+?)[\'"]\)/',
-                    '/document\.getElementsByClassName\([\'"](.+?)[\'"]\)/',
-                    '/document\.getElementsByTagName\([\'"](.+?)[\'"]\)/',
-                    '/document\.querySelectorAll\([\'"](.+?)[\'"]\)/',
-                    '/document\.createElement\([\'"](.+?)[\'"]\)/'
-                ),
-                array(
-                    '$(\'#$1\')',
-                    '$(\'$1\')',
-                    '$$(\'.\'$1\')',
-                    '$$(\'"$1\')',
-                    '$$(\'"$1\')',
-                    'root.ownerDocument.createElement(\'$1\')'
-                ),
-                $js
-            );
-
-            // Escape JavaScript
-            $transformedJs = str_replace(
-                array('\\', '"', "\n", "\r", "\t"), 
-                array('\\\\', '\\"', "\\n", "", "\\t"), 
-                $transformedJs
-            );
-
-            echo '
-            const sectionJS = "' . $transformedJs . '";
-            const fn = new Function("$", "$$", "jQuery", "root", sectionJS);
-            fn.call(shadowRoot, $, $$, jQuery, shadowRoot);
         } catch (error) {
-            console.error("[Section JavaScript Error]:", error);
+            console.error("Failed to initialize shadow DOM for section:", "' . esc_js($section_id) . '", error);
         }
-    }).catch(error => {
-        console.error("Error initializing section:", error);
-    });
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        requestAnimationFrame(init);
+    }
 })();
 </script>';
 
-
-
-
-
-            
         } catch (Exception $e) {
             $this->logger->log('Section render failed', 'error', array(
                 'section_id' => $section_id,
@@ -912,6 +831,7 @@ class TCL_Builder {
             echo '</div>';
         }
     }
+
 
 
 

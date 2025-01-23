@@ -1,38 +1,42 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Function to handle header scroll behavior
-    function handleHeaderScroll() {
-        // First try to find header in regular DOM
-        let header = document.querySelector('.main-header');
-        
-        // If not found in regular DOM, try shadow DOM
-        if (!header) {
-            const shadowRoots = Array.from(document.querySelectorAll('*'))
-                .filter(el => el.shadowRoot)
-                .map(el => el.shadowRoot);
-            
-            for (const root of shadowRoots) {
-                header = root.querySelector('.main-header');
-                if (header) break;
+(function() {
+    'use strict';
+
+    const TCLCustomHeader = {
+        init() {
+            this.handleScroll();
+            window.addEventListener('scroll', () => this.handleScroll());
+        },
+
+        handleScroll() {
+            // Find header in main document first
+            let header = document.querySelector('[data-component="main-header"]');
+
+            if (!header) {
+                // Search in shadow roots using data attributes
+                const sections = document.querySelectorAll('.tcl-builder-section');
+                for (const section of sections) {
+                    const host = section.querySelector('.tcl-builder-section-host');
+                    if (host?.shadowRoot) {
+                        header = host.shadowRoot.querySelector('[data-component="main-header"]');
+                        if (header) break;
+                    }
+                }
+            }
+
+            if (!header) return;
+
+            const scrollPosition = window.scrollY;
+            if (scrollPosition > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
             }
         }
+    };
 
-        if (header) {
-            const scrollHandler = () => {
-                if (window.scrollY > 50) {
-                    header.classList.add('scrolled');
-                } else {
-                    header.classList.remove('scrolled');
-                }
-            };
-
-            // Add scroll listener
-            window.addEventListener('scroll', scrollHandler);
-            
-            // Initial check
-            scrollHandler();
-        }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => TCLCustomHeader.init());
+    } else {
+        TCLCustomHeader.init();
     }
-
-    // Initialize header scroll behavior
-    handleHeaderScroll();
-});
+})();
