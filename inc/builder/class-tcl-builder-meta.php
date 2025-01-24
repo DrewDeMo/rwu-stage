@@ -178,7 +178,8 @@ class TCL_Builder_Meta {
                     if (!isset($section['content']) || !is_string($section['content'])) {
                         throw new Exception('Invalid shortcode content');
                     }
-                    $processed_section['content'] = wp_kses_post($section['content']);
+                    $processed_section['content'] = wp_kses($section['content'], self::get_allowed_html());
+
                 }
 
                 $processed_sections[] = $processed_section;
@@ -233,6 +234,76 @@ class TCL_Builder_Meta {
         }
     }
 
+    private static function get_allowed_html() {
+        return array_merge(
+            wp_kses_allowed_html('post'),
+            array(
+                'iframe' => array(
+                    'src' => true,
+                    'width' => true,
+                    'height' => true,
+                    'frameborder' => true,
+                    'style' => true,
+                    'loading' => true,
+                    'allowfullscreen' => true,
+                    'allow' => true,
+                    'title' => true,
+                    'class' => true,
+                    'id' => true
+                ),
+                'input' => array(
+                    'type' => true,
+                    'id' => true,
+                    'class' => true,
+                    'placeholder' => true,
+                    'value' => true,
+                    'name' => true,
+                    'required' => true,
+                    'min' => true,
+                    'max' => true,
+                    'pattern' => true,
+                    'style' => true,
+                    'autocomplete' => true
+                ),
+                'select' => array(
+                    'id' => true,
+                    'class' => true,
+                    'name' => true,
+                    'required' => true,
+                    'style' => true
+                ),
+                'option' => array(
+                    'value' => true,
+                    'selected' => true
+                ),
+                'textarea' => array(
+                    'id' => true,
+                    'class' => true,
+                    'name' => true,
+                    'required' => true,
+                    'rows' => true,
+                    'cols' => true,
+                    'style' => true,
+                    'placeholder' => true
+                ),
+                'form' => array(
+                    'id' => true,
+                    'class' => true,
+                    'action' => true,
+                    'method' => true,
+                    'style' => true
+                ),
+                'button' => array(
+                    'type' => true,
+                    'id' => true,
+                    'class' => true,
+                    'style' => true,
+                    'onclick' => true
+                )
+            )
+        );
+    }
+
     private static function is_valid_html($html) {
         if (empty($html)) return true;
 
@@ -241,35 +312,16 @@ class TCL_Builder_Meta {
             $html = base64_decode($html);
         }
 
-        // Use DOMDocument for basic structure validation
-        $dom = new DOMDocument();
-        libxml_use_internal_errors(true);
+        // Sanitize HTML while preserving all allowed elements
+        $sanitized = wp_kses($html, self::get_allowed_html());
         
-        // Add wrapper to handle fragments, preserve scripts
-        $wrapped_html = "<div>$html</div>";
-        $result = @$dom->loadHTML($wrapped_html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOERROR);
-        
-        $errors = libxml_get_errors();
-        libxml_clear_errors();
-
-        // Log validation issues but be more lenient
-        foreach ($errors as $error) {
-            // Skip script-related warnings
-            if (stripos($error->message, 'script') !== false) {
-                continue;
-            }
-            
-            if ($error->level === LIBXML_ERR_FATAL) {
-                self::$logger->log('HTML validation error', 'warning', array(
-                    'error' => $error->message,
-                    'line' => $error->line,
-                    'column' => $error->column
-                ));
-            }
+        // Check if essential content was stripped
+        if (empty($sanitized) && !empty($html)) {
+            self::$logger->log('HTML validation warning: content was stripped', 'warning');
+            return false;
         }
 
-        // Be more permissive - only fail on complete parse failure
-        return $result !== false;
+        return true;
     }
 
     private static function is_valid_css($css) {

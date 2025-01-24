@@ -55,6 +55,79 @@ class TCL_Builder_AJAX {
     }
 
     /**
+     * Get allowed HTML tags including iframes
+     */
+    private function get_allowed_html() {
+        return array_merge(
+            wp_kses_allowed_html('post'),
+            array(
+                'iframe' => array(
+                    'src' => true,
+                    'width' => true,
+                    'height' => true,
+                    'frameborder' => true,
+                    'style' => true,
+                    'loading' => true,
+                    'allowfullscreen' => true,
+                    'allow' => true,
+                    'title' => true,
+                    'class' => true,
+                    'id' => true
+                ),
+                'input' => array(
+                    'type' => true,
+                    'id' => true,
+                    'class' => true,
+                    'placeholder' => true,
+                    'value' => true,
+                    'name' => true,
+                    'required' => true,
+                    'min' => true,
+                    'max' => true,
+                    'pattern' => true,
+                    'style' => true,
+                    'autocomplete' => true
+                ),
+                'select' => array(
+                    'id' => true,
+                    'class' => true,
+                    'name' => true,
+                    'required' => true,
+                    'style' => true
+                ),
+                'option' => array(
+                    'value' => true,
+                    'selected' => true
+                ),
+                'textarea' => array(
+                    'id' => true,
+                    'class' => true,
+                    'name' => true,
+                    'required' => true,
+                    'rows' => true,
+                    'cols' => true,
+                    'style' => true,
+                    'placeholder' => true
+                ),
+                'form' => array(
+                    'id' => true,
+                    'class' => true,
+                    'action' => true,
+                    'method' => true,
+                    'style' => true
+                ),
+                'button' => array(
+                    'type' => true,
+                    'id' => true,
+                    'class' => true,
+                    'style' => true,
+                    'onclick' => true
+                )
+            )
+        );
+    }
+
+    /**
      * Constructor
      */
     private function __construct() {
@@ -198,7 +271,7 @@ class TCL_Builder_AJAX {
                         }
 
                         $normalized_section['content'] = array(
-                            'html' => wp_kses_post($section['content']['html']),
+                            'html' => wp_kses($section['content']['html'], $this->get_allowed_html()),
                             'css' => wp_strip_all_tags($section['content']['css']),
                             'js' => $js_content
                         );

@@ -485,26 +485,10 @@ class TCL_Builder {
                         continue;
                     }
 
-                    // Validate HTML structure
-                    $dom = new DOMDocument();
-                    libxml_use_internal_errors(true);
-                    $test_html = $section['content']['html'] ?? '';
-                    $dom->loadHTML($test_html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-                    $html_errors = libxml_get_errors();
-                    libxml_clear_errors();
-
-                    if (!empty($html_errors)) {
-                        $this->logger->log('HTML validation issues', 'warning', array(
-                            'section_id' => $section['id'],
-                            'errors' => array_map(function($error) {
-                                return $error->message;
-                            }, $html_errors)
-                        ));
-                    }
-
                     // Process HTML content
                     $sanitized_section['content'] = array(
-                        'html' => $section['content']['html'] ?? '',
+                        'html' => wp_kses($section['content']['html'] ?? '', $this->get_allowed_html()),
+
                         'css' => $this->sanitize_css($section['content']['css'] ?? ''),
                         'js' => isset($section['content']['js']) ? $section['content']['js'] : ''
                     );
@@ -555,6 +539,79 @@ class TCL_Builder {
     /**
      * Sanitize CSS content
      */
+    /**
+     * Get allowed HTML tags and attributes
+     */
+    private function get_allowed_html() {
+        return array_merge(
+            wp_kses_allowed_html('post'),
+            array(
+                'iframe' => array(
+                    'src' => true,
+                    'width' => true,
+                    'height' => true,
+                    'frameborder' => true,
+                    'style' => true,
+                    'loading' => true,
+                    'allowfullscreen' => true,
+                    'allow' => true,
+                    'title' => true,
+                    'class' => true,
+                    'id' => true
+                ),
+                'input' => array(
+                    'type' => true,
+                    'id' => true,
+                    'class' => true,
+                    'placeholder' => true,
+                    'value' => true,
+                    'name' => true,
+                    'required' => true,
+                    'min' => true,
+                    'max' => true,
+                    'pattern' => true,
+                    'style' => true,
+                    'autocomplete' => true
+                ),
+                'select' => array(
+                    'id' => true,
+                    'class' => true,
+                    'name' => true,
+                    'required' => true,
+                    'style' => true
+                ),
+                'option' => array(
+                    'value' => true,
+                    'selected' => true
+                ),
+                'textarea' => array(
+                    'id' => true,
+                    'class' => true,
+                    'name' => true,
+                    'required' => true,
+                    'rows' => true,
+                    'cols' => true,
+                    'style' => true,
+                    'placeholder' => true
+                ),
+                'form' => array(
+                    'id' => true,
+                    'class' => true,
+                    'action' => true,
+                    'method' => true,
+                    'style' => true
+                ),
+                'button' => array(
+                    'type' => true,
+                    'id' => true,
+                    'class' => true,
+                    'style' => true,
+                    'onclick' => true
+                )
+            )
+        );
+    }
+
     protected function sanitize_css($css) {
         if (empty($css)) return '';
         return $css; // Return CSS unaltered
