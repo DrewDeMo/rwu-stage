@@ -11,7 +11,12 @@
         jsQueue: new Map(),
 
         initShadowJS(sectionId, jsContent) {
-            // Enhanced shadow DOM initialization with better scoping
+            // Check if shadow DOM is bypassed
+            if (jsContent.includes('// @bypass-shadow-dom')) {
+                return jsContent; // Return original code without wrapping
+            }
+
+            // Original shadow DOM initialization with scoping
             return `
                 try {
                     const shadowRoot = this.getRootNode();
@@ -138,11 +143,8 @@
                         <i data-lucide="upload"></i>
                         Import
                     </button>
-                    <button class="button add-test-section-btn">
-                        <i data-lucide="beaker"></i>
-                        Add Test Section
-                    </button>
                 </div>
+
             `);
 
             // Add sections
@@ -724,33 +726,8 @@
         },
 
 
-        addTestSection() {
-            const testSection = {
-                id: Date.now() + Math.floor(Math.random() * 1000),
-                type: 'html',
-                title: 'Test Shadow DOM Section',
-                designation: 'library',
-                content: {
-                    html: `
-                        <button id="test-button">Click Me</button>
-                        <div id="test-result">Initial Text</div>
-                    `,
-                    css: `
-                        #test-button { padding: 10px; }
-                        #test-result { margin-top: 10px; }
-                    `,
-                    js: `
-                        document.getElementById('test-button').addEventListener('click', function() {
-                            document.getElementById('test-result').textContent = 'It works!';
-                        });
-                    `
-                }
-            };
 
-            TCLBuilder.Core.sections.push(testSection);
-            this.renderSections();
-            TCLBuilder.WordPress.save();
-        },
+
 
         bindEvents() {
             // Add hidden file input for imports
@@ -788,10 +765,8 @@
                 TCLBuilder.Modal.open('editor');
             });
 
-            // Add test section button
-            jQuery(document).on('click', '.add-test-section-btn', () => {
-                this.addTestSection();
-            });
+
+
 
             // Handle designation changes
             jQuery(document).on('change', '.designation-selector select', (e) => {

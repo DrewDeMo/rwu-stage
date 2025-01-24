@@ -132,10 +132,14 @@
                         
                     // Process JS if present and needs shadow DOM
                     if (content.js) {
-                        const needsShadowDOM = TCLBuilder.Modal.validateShadowDOMJS(content.js).length > 0;
-                        if (needsShadowDOM || section.shadowDOM) {
-                            content.js = TCLBuilder.Modal.rewriteForShadowDOM(content.js);
-                            content.shadowDOM = true;
+                        // Check for bypass flag
+                        const bypassShadowDOM = content.js.includes('// @bypass-shadow-dom');
+                        if (!bypassShadowDOM) {
+                            const needsShadowDOM = TCLBuilder.Modal.validateShadowDOMJS(content.js).length > 0;
+                            if (needsShadowDOM || section.shadowDOM) {
+                                content.js = TCLBuilder.Modal.rewriteForShadowDOM(content.js);
+                                content.shadowDOM = true;
+                            }
                         }
                     }
                     

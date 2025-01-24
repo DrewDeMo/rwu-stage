@@ -213,10 +213,13 @@
                             validationErrors.push('JavaScript syntax error: ' + e.message);
                         }
 
-                        // Validate JS for shadow DOM compatibility
-                        const shadowDOMViolations = this.validateShadowDOMJS(content.js);
-                        if (shadowDOMViolations.length > 0) {
-                            validationErrors.push('Shadow DOM compatibility issues:\n' + shadowDOMViolations.join('\n'));
+                        // Only validate Shadow DOM if not explicitly disabled
+                        const bypassShadowDOM = content.js.includes('// @bypass-shadow-dom');
+                        if (!bypassShadowDOM) {
+                            const shadowDOMViolations = this.validateShadowDOMJS(content.js);
+                            if (shadowDOMViolations.length > 0) {
+                                validationErrors.push('Shadow DOM compatibility issues:\n' + shadowDOMViolations.join('\n'));
+                            }
                         }
                     }
                 } else {
@@ -367,6 +370,11 @@
         },
 
         rewriteForShadowDOM(js) {
+            // Check if shadow DOM is bypassed
+            if (js.includes('// @bypass-shadow-dom')) {
+                return js; // Return original code without wrapping
+            }
+            
             // Replace direct DOM queries with shadow root context
             let shadowJS = js
                 .replace(/document\.querySelector\(/g, 'this.shadowRoot.querySelector(')
@@ -376,7 +384,6 @@
                 .replace(/document\.body/g, 'this.shadowRoot')
                 .replace(/window\.document/g, 'this.shadowRoot');
 
-            // Wrap in shadow DOM class
             return `
 class SectionComponent extends HTMLElement {
     constructor() {
